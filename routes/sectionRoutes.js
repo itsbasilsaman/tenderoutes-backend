@@ -58,8 +58,8 @@ router.post('/', upload.single('image'), async (req, res) => {
         ar: titleAr
       },
       description: {
-        en: descriptionEn,
-        ar: descriptionAr
+        en: descriptionEn || "",
+        ar: descriptionAr || ""
       },
       imageUrl: req.file?.path || null,
       imagePublicId: req.file?.filename || null,

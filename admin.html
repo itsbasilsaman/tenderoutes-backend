@@ -40,31 +40,28 @@
 
     form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const formData = new FormData(form);
-  const sectionId = document.getElementById('sectionId').value;
-
+  
   try {
-    const method = sectionId ? 'PUT' : 'POST';
-    const url = sectionId 
-      ? `https://tenderoutes-backend-2.onrender.com/api/sections/${sectionId}` 
-      : 'https://tenderoutes-backend-2.onrender.com/api/sections';
-
-    const response = await fetch(url, {
-      method,
-      body: formData
+    const formData = new FormData(form);
+    const response = await fetch('https://tenderoutes-backend-2.onrender.com/api/sections', {
+      method: 'POST',
+      body: formData,
+      // headers: {
+        // Add this if your backend expects JSON
+        // 'Content-Type': 'multipart/form-data'  
+      // }
     });
 
-    const result = await response.json();
-    
     if (!response.ok) {
-      throw new Error(result.error || result.message || 'Unknown error occurred');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Server error');
     }
 
+    const result = await response.json();
+    console.log('Success:', result);
+    alert('Section created successfully!');
     form.reset();
-    document.getElementById('sectionId').value = '';
-    cancelEditBtn.style.display = 'none';
     loadSections();
-    alert('Section saved successfully!');
   } catch (error) {
     console.error('Error:', error);
     alert(`Error: ${error.message}`);
