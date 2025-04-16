@@ -86,6 +86,7 @@ router.put('/:id', upload.single('image'), async( req, res) => {
 
 // Delete a section 
 router.delete('/:id', async(req,res) => {
+ try {
   const section = await Section.findById(req.params.id)
   if(!section) return res.status(404).send("Not Found");
 
@@ -93,9 +94,12 @@ router.delete('/:id', async(req,res) => {
   await cloudinary.uploader.destroy(section.imagePublicId)
  }
 
-  await section.remove()
+  await Section.deleteOne({_id: req.params.id})
   res.json({message: "Deleted"});
-
+ } catch(error) {
+  console.error(error)
+  res.status(500).send("Server Error")
+ }
 })
 
 module.exports = router

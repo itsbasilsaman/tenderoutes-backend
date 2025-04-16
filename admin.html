@@ -3,16 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Panel</title>
+  <style>
+    .section-item {
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+    }
+  </style>
 </head>
 <body>
   <h2>Add/Edit Section</h2>
   <form id="sectionForm" enctype="multipart/form-data">
     <input type="text" name="titleEn" placeholder="Title (EN)" required><br>
     <input type="text" name="titleAr" placeholder="Title (AR)" required><br>
+    <input type="hidden" name="sectionId" id="sectionId">
+    <br>
     <textarea name="descriptionEn" placeholder="Description (EN)" required></textarea><br>
     <textarea name="descriptionAr" placeholder="Description (AR)" required></textarea><br>
     <input type="file" name="image"><br>
     <button type="submit">Save</button>
+    <button type="button" id="cancelEdit" style="display:none;">Cancel</button>
   </form>
 
   <h2>Current Sections</h2>
@@ -21,39 +36,102 @@
   <script>
     const form = document.getElementById('sectionForm');
     const container = document.getElementById('sectionsContainer');
+    const cancelEditBtn = document.getElementById('cancelEdit');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      await fetch('http://localhost:5000/api/sections', {
-        method: 'POST',
-        body: formData
-      });
-      form.reset();
-      loadSections();
+      const sectionId = document.getElementById('sectionId').value;
+
+      try {
+        const method = sectionId ? 'PUT' : 'POST';
+        const url = sectionId 
+          ? `https://tenderoutes-backend-2.onrender.com/api/sections/${sectionId}` 
+          : 'https://tenderoutes-backend-2.onrender.com/api/sections';
+
+        const response = await fetch(url, {
+          method,
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        form.reset();
+        document.getElementById('sectionId').value = '';
+        cancelEditBtn.style.display = 'none';
+        loadSections();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+      }
     });
+
+    cancelEditBtn.addEventListener('click', () => {
+      form.reset();
+      document.getElementById('sectionId').value = '';
+      cancelEditBtn.style.display = 'none';
+    });
+
+    function editSection(section) {
+      document.querySelector('input[name="titleEn"]').value = section.title.en;
+      document.querySelector('input[name="titleAr"]').value = section.title.ar;
+      document.querySelector('textarea[name="descriptionEn"]').value = section.description.en;
+      document.querySelector('textarea[name="descriptionAr"]').value = section.description.ar;
+      document.getElementById('sectionId').value = section._id;
+      cancelEditBtn.style.display = 'inline-block';
+      window.scrollTo(0, 0);
+    }
 
     async function loadSections() {
       container.innerHTML = '';
-      const res = await fetch('http://localhost:5000/api/sections');
-      const sections = await res.json();
-      sections.forEach(sec => {
-        container.innerHTML += `
-          <div>
+      try {
+        const res = await fetch('https://tenderoutes-backend-2.onrender.com/api/sections');
+        if (!res.ok) {
+          throw new Error('Failed to fetch sections');
+        }
+        const sections = await res.json();
+        
+        sections.forEach(sec => {
+          const sectionDiv = document.createElement('div');
+          sectionDiv.className = 'section-item';
+          sectionDiv.innerHTML = `
             <h3>${sec.title.en}</h3>
+            <h4>${sec.title.ar}</h4>
             <p>${sec.description.en}</p>
-            <img src="${sec.imageUrl}" width="200" />
-            <button onclick="deleteSection('${sec._id}')">Delete</button>
-          </div>
-        `;
-      });
+            <p>${sec.description.ar}</p>
+            ${sec.imageUrl ? `<img src="${sec.imageUrl}" width="200" />` : ''}
+            <div style="margin-top: 10px;">
+              <button onclick="editSection(${JSON.stringify(sec).replace(/"/g, '&quot;')})">Edit</button>
+              <button onclick="deleteSection('${sec._id}')">Delete</button>
+            </div>
+          `;
+          container.appendChild(sectionDiv);
+        });
+      } catch (error) {
+        console.error('Error loading sections:', error);
+        container.innerHTML = '<p>Error loading sections. Please try again.</p>';
+      }
     }
 
     async function deleteSection(id) {
-      await fetch(`http://localhost:5000/api/sections/${id}`, {
-        method: 'DELETE'
-      });
-      loadSections();
+      if (!confirm('Are you sure you want to delete this section?')) return;
+      
+      try {
+        const response = await fetch(`https://tenderoutes-backend-2.onrender.com/api/sections/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to delete section');
+        }
+        
+        loadSections();
+      } catch (error) {
+        console.error('Error deleting section:', error);
+        alert('Failed to delete section. Please try again.');
+      }
     }
 
     loadSections();
