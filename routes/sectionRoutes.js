@@ -41,6 +41,9 @@ router.get('/', async (req,res) => {
 // Create a new section
 router.post('/', upload.single('image'), async (req, res) => {
   try {
+    console.log('Request body:', req.body); // Log the received body
+    console.log('Request file:', req.file); // Log the received file
+
     const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body;
 
     if (!titleEn || !titleAr || !descriptionEn || !descriptionAr) {
@@ -48,7 +51,7 @@ router.post('/', upload.single('image'), async (req, res) => {
     }
 
     // Validate file if uploaded
-    if (req.file && req.file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (req.file && req.file.size > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'File size too large (max 5MB)' });
     }
 
@@ -65,13 +68,19 @@ router.post('/', upload.single('image'), async (req, res) => {
       imagePublicId: req.file?.filename || null,
     });
 
-    await newSection.save();
-    res.status(201).json(newSection);
+    const savedSection = await newSection.save();
+    console.log('Saved section:', savedSection);
+    res.status(201).json(savedSection);
   } catch (error) {
-    console.error('Error creating section:', error);
+    console.error('Detailed error creating section:', {
+      error: error.toString(),
+      stack: error.stack,
+      fullError: error
+    });
     res.status(500).json({ 
       error: 'Server error',
-      details: error.message 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
