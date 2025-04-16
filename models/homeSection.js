@@ -9,7 +9,8 @@ const sectionSchema = new mongoose.Schema({
     en: String,
     ar: String
   },
-  imageUrl :String
+  imageUrl :String,
+  imagePublicId: String
 });
 
 

@@ -5,12 +5,26 @@ const express = require('express')
 const multer = require('multer')
 const Section = require('../models/homeSection')
 const fs = require('fs');
- 
+const {v2:cloudinary} = require('cloudinary')
+const { CloudinaryStorage} = require('multer-storage-cloudinary')
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req,file, cb) => cb(null, 'uploads/'),
-  filename: (req,file,cb) => cb(null, Date.now() + '-' + file.originalname)
+
+
+cloudinary.config({
+  cloud_name: 'tenderoutes',
+  api_key: '962426731954725',
+  api_secret: 'AlyIKGASf0T3FgrIgqELSml89-w',
+});
+
+// Multer + Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'tenderoutes-sections',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
+    transformation: [{ width: 1000, height: 700, crop: 'limit' }],
+  },
 });
 
 const upload = multer({storage});
@@ -37,7 +51,8 @@ router.post('/', upload.single('image'), async (req, res) => {
       en: descriptionEn,
       ar: descriptionAr
     },
-    imageUrl: req.file ? `/uploads/${req.file.filename}` : null
+    imageUrl: req.file?.path || null,
+    imagePublicId: req.file?.filename || null,
   });
 
   await newSection.save();
@@ -50,16 +65,20 @@ router.put('/:id', upload.single('image'), async( req, res) => {
   const {titleEn, titleAr, descriptionEn, descriptionAr} = req.body;
   const section = await Section.findById(req.params.id);
 
-  if(req.file && section.imageUrl){
-    fs.unlinkSync(`.${section.imageUrl}`)
-  }
+ if(!section) return res.status(404).send('Section not found');
+
+ if(req.file && section.imagePublicId){
+  await cloudinary.uploader.destroy(section.imagePublicId)
+ }
 
   section.title.en = titleEn;
   section.title.ar = titleAr;
   section.description.en = descriptionEn;
   section.description.ar = descriptionAr;
-  if(req.file) section.imageUrl = `/uploads/${req.file.filename}`
-
+  if(req.file)  {
+    section.imageUrl = req.file.path;
+    section.imagePublicId = req.file.filename
+  }
   await section.save();
   res.json(section);
 })
@@ -70,9 +89,9 @@ router.delete('/:id', async(req,res) => {
   const section = await Section.findById(req.params.id)
   if(!section) return res.status(404).send("Not Found");
 
-  if(section.imageUrl) {
-    fs.unlinkSync(`.${section.imageUrl}`)
-  }
+ if(section.imagePublicId){
+  await cloudinary.uploader.destroy(section.imagePublicId)
+ }
 
   await section.remove()
   res.json({message: "Deleted"});
