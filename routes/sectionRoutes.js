@@ -40,25 +40,41 @@ router.get('/', async (req,res) => {
 
 // Create a new section
 router.post('/', upload.single('image'), async (req, res) => {
-  const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body;
+  try {
+    const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body;
 
-  const newSection = new Section({
-    title: {
-      en: titleEn,
-      ar: titleAr
-    },
-    description: {
-      en: descriptionEn,
-      ar: descriptionAr
-    },
-    imageUrl: req.file?.path || null,
-    imagePublicId: req.file?.filename || null,
-  });
+    if (!titleEn || !titleAr || !descriptionEn || !descriptionAr) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
 
-  await newSection.save();
-  res.status(201).json(newSection);
+    // Validate file if uploaded
+    if (req.file && req.file.size > 5 * 1024 * 1024) { // 5MB limit
+      return res.status(400).json({ error: 'File size too large (max 5MB)' });
+    }
+
+    const newSection = new Section({
+      title: {
+        en: titleEn,
+        ar: titleAr
+      },
+      description: {
+        en: descriptionEn,
+        ar: descriptionAr
+      },
+      imageUrl: req.file?.path || null,
+      imagePublicId: req.file?.filename || null,
+    });
+
+    await newSection.save();
+    res.status(201).json(newSection);
+  } catch (error) {
+    console.error('Error creating section:', error);
+    res.status(500).json({ 
+      error: 'Server error',
+      details: error.message 
+    });
+  }
 });
-
 
 // Update a section
 router.put('/:id', upload.single('image'), async( req, res) => {

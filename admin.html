@@ -39,34 +39,37 @@
     const cancelEditBtn = document.getElementById('cancelEdit');
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const sectionId = document.getElementById('sectionId').value;
+  e.preventDefault();
+  const formData = new FormData(form);
+  const sectionId = document.getElementById('sectionId').value;
 
-      try {
-        const method = sectionId ? 'PUT' : 'POST';
-        const url = sectionId 
-          ? `https://tenderoutes-backend-2.onrender.com/api/sections/${sectionId}` 
-          : 'https://tenderoutes-backend-2.onrender.com/api/sections';
+  try {
+    const method = sectionId ? 'PUT' : 'POST';
+    const url = sectionId 
+      ? `https://tenderoutes-backend-2.onrender.com/api/sections/${sectionId}` 
+      : 'https://tenderoutes-backend-2.onrender.com/api/sections';
 
-        const response = await fetch(url, {
-          method,
-          body: formData
-        });
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        form.reset();
-        document.getElementById('sectionId').value = '';
-        cancelEditBtn.style.display = 'none';
-        loadSections();
-      } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-      }
+    const response = await fetch(url, {
+      method,
+      body: formData
     });
+
+    const result = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(result.error || result.message || 'Unknown error occurred');
+    }
+
+    form.reset();
+    document.getElementById('sectionId').value = '';
+    cancelEditBtn.style.display = 'none';
+    loadSections();
+    alert('Section saved successfully!');
+  } catch (error) {
+    console.error('Error:', error);
+    alert(`Error: ${error.message}`);
+  }
+});
 
     cancelEditBtn.addEventListener('click', () => {
       form.reset();
