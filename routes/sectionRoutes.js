@@ -10,24 +10,39 @@ const { CloudinaryStorage} = require('multer-storage-cloudinary')
 const router = express.Router();
 
 
+try {
+  cloudinary.config({
+    cloud_name: 'tenderoutes',
+    api_key: '962426731954725',
+    api_secret: process.env.CLOUDINARY_API_SECRET || 'your-api-secret-here', // Use environment variable
+    secure: true
+  });
+  
+  // Test Cloudinary connection
+  cloudinary.api.ping()
+    .then(() => console.log('Connected to Cloudinary successfully'))
+    .catch(err => console.error('Cloudinary connection failed:', err));
+} catch (err) {
+  console.error('Cloudinary config error:', err);
+}
 
-cloudinary.config({
-  cloud_name: 'tenderoutes',
-  api_key: '962426731954725',
-  api_secret: 'AlyIKGASf0T3FgrIgqELSml89-w',
+// Enhanced storage configuration with error handling
+const storage = new multer.diskStorage({
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
 });
 
-// Multer + Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'tenderoutes-sections',
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
-    transformation: [{ width: 1000, height: 700, crop: 'limit' }],
-  },
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.match(/^image\/(jpg|jpeg|png|webp)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  }
 });
-
-const upload = multer({storage});
 
 
 
@@ -41,45 +56,58 @@ router.get('/', async (req,res) => {
 // Create a new section
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    console.log('Request body:', req.body); // Log the received body
-    console.log('Request file:', req.file); // Log the received file
+    console.log('Request received with body:', req.body);
+    console.log('Uploaded file:', req.file);
 
     const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body;
 
+    // Validation
     if (!titleEn || !titleAr || !descriptionEn || !descriptionAr) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    // Validate file if uploaded
-    if (req.file && req.file.size > 5 * 1024 * 1024) {
-      return res.status(400).json({ error: 'File size too large (max 5MB)' });
+    let imageUrl = null;
+    let imagePublicId = null;
+
+    // Handle file upload to Cloudinary if file exists
+    if (req.file) {
+      try {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'tenderoutes-sections',
+          transformation: { width: 1000, height: 700, crop: 'limit' }
+        });
+        
+        imageUrl = result.secure_url;
+        imagePublicId = result.public_id;
+        
+        // Delete the temporary file
+        fs.unlinkSync(req.file.path);
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error:', uploadErr);
+        return res.status(500).json({ 
+          error: 'Failed to upload image',
+          details: uploadErr.message 
+        });
+      }
     }
 
+    // Create new section
     const newSection = new Section({
-      title: {
-        en: titleEn,
-        ar: titleAr
-      },
-      description: {
-        en: descriptionEn || "",
-        ar: descriptionAr || ""
-      },
-      imageUrl: req.file?.path || null,
-      imagePublicId: req.file?.filename || null,
+      title: { en: titleEn, ar: titleAr },
+      description: { en: descriptionEn, ar: descriptionAr },
+      imageUrl,
+      imagePublicId
     });
 
     const savedSection = await newSection.save();
-    console.log('Saved section:', savedSection);
+    console.log('Section saved successfully:', savedSection);
+    
     res.status(201).json(savedSection);
   } catch (error) {
-    console.error('Detailed error creating section:', {
-      error: error.toString(),
-      stack: error.stack,
-      fullError: error
-    });
+    console.error('Full error stack:', error);
     res.status(500).json({ 
-      error: 'Server error',
-      details: error.message,
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
