@@ -8,9 +8,9 @@ const router = express.Router();
 // Cloudinary Configuration
 try {
   cloudinary.config({
-    cloud_name: 'tenderoutes',
+    cloud_name: 'dleiconw0',
     api_key: '962426731954725',
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    api_secret:  process.env.CLOUDINARY_API_SECRET || 'AlyIKGASf0T3FgrIgqELSml89-w',
     secure: true
   });
   
