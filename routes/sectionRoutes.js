@@ -1,20 +1,16 @@
- 
- 
-
-const express = require('express')
-const multer = require('multer')
-const Section = require('../models/homeSection')
+const express = require('express');
+const multer = require('multer');
+const Section = require('../models/homeSection');
 const fs = require('fs');
-const {v2:cloudinary} = require('cloudinary')
-const { CloudinaryStorage} = require('multer-storage-cloudinary')
+const { v2: cloudinary } = require('cloudinary');
 const router = express.Router();
 
-
+// Cloudinary Configuration
 try {
   cloudinary.config({
     cloud_name: 'tenderoutes',
     api_key: '962426731954725',
-    api_secret: process.env.CLOUDINARY_API_SECRET || 'your-api-secret-here', // Use environment variable
+    api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true
   });
   
@@ -26,8 +22,16 @@ try {
   console.error('Cloudinary config error:', err);
 }
 
-// Enhanced storage configuration with error handling
-const storage = new multer.diskStorage({
+// Configure disk storage for temporarily storing uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = './uploads';
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
   }
@@ -44,13 +48,15 @@ const upload = multer({
   }
 });
 
-
-
 // GET All sections
-router.get('/', async (req,res) => {
-  const sections = await Section.find()
-  console.log(`12345`,sections)
-  res.json(sections);
+router.get('/', async (req, res) => {
+  try {
+    const sections = await Section.find();
+    res.json(sections);
+  } catch (error) {
+    console.error('Error fetching sections:', error);
+    res.status(500).json({ error: 'Failed to fetch sections' });
+  }
 });
 
 // Create a new section
@@ -107,54 +113,86 @@ router.post('/', upload.single('image'), async (req, res) => {
     console.error('Full error stack:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // Update a section
-router.put('/:id', upload.single('image'), async( req, res) => {
-  const {titleEn, titleAr, descriptionEn, descriptionAr} = req.body;
-  const section = await Section.findById(req.params.id);
+router.put('/:id', upload.single('image'), async (req, res) => {
+  try {
+    const { titleEn, titleAr, descriptionEn, descriptionAr } = req.body;
+    const section = await Section.findById(req.params.id);
 
- if(!section) return res.status(404).send('Section not found');
+    if (!section) return res.status(404).json({ error: 'Section not found' });
 
- if(req.file && section.imagePublicId){
-  await cloudinary.uploader.destroy(section.imagePublicId)
- }
+    // Update text fields
+    section.title.en = titleEn || section.title.en;
+    section.title.ar = titleAr || section.title.ar;
+    section.description.en = descriptionEn || section.description.en;
+    section.description.ar = descriptionAr || section.description.ar;
 
-  section.title.en = titleEn;
-  section.title.ar = titleAr;
-  section.description.en = descriptionEn;
-  section.description.ar = descriptionAr;
-  if(req.file)  {
-    section.imageUrl = req.file.path;
-    section.imagePublicId = req.file.filename
+    // Handle image update if a new file was uploaded
+    if (req.file) {
+      try {
+        // Delete old image from Cloudinary if exists
+        if (section.imagePublicId) {
+          await cloudinary.uploader.destroy(section.imagePublicId);
+        }
+
+        // Upload new image to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'tenderoutes-sections',
+          transformation: { width: 1000, height: 700, crop: 'limit' }
+        });
+
+        // Update section with new image info
+        section.imageUrl = result.secure_url;
+        section.imagePublicId = result.public_id;
+
+        // Delete temporary file
+        fs.unlinkSync(req.file.path);
+      } catch (uploadErr) {
+        console.error('Cloudinary upload error during update:', uploadErr);
+        return res.status(500).json({
+          error: 'Failed to update image',
+          details: uploadErr.message
+        });
+      }
+    }
+
+    // Save updated section
+    const updatedSection = await section.save();
+    res.json(updatedSection);
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({
+      error: 'Failed to update section',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-  await section.save();
-  res.json(section);
-})
+});
 
+// Delete a section
+router.delete('/:id', async (req, res) => {
+  try {
+    const section = await Section.findById(req.params.id);
+    if (!section) return res.status(404).json({ error: 'Section not found' });
 
-// Delete a section 
-router.delete('/:id', async(req,res) => {
- try {
-  const section = await Section.findById(req.params.id)
-  if(!section) return res.status(404).send("Not Found");
+    // Delete image from Cloudinary if exists
+    if (section.imagePublicId) {
+      await cloudinary.uploader.destroy(section.imagePublicId);
+    }
 
- if(section.imagePublicId){
-  await cloudinary.uploader.destroy(section.imagePublicId)
- }
+    await Section.deleteOne({ _id: req.params.id });
+    res.json({ message: "Section deleted successfully" });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({
+      error: 'Failed to delete section',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
 
-  await Section.deleteOne({_id: req.params.id})
-  res.json({message: "Deleted"});
- } catch(error) {
-  console.error(error)
-  res.status(500).send("Server Error")
- }
-})
-
-module.exports = router
-
-
+module.exports = router;
