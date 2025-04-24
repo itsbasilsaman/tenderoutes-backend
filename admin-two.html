@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Packages Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+ 
+</head>
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  .loading-bar {
+    position: relative;
+    overflow: hidden;
+  }
+  .loading-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: loading 1.5s infinite;
+  }
+  @keyframes loading {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+</style>
+<body class="bg-gray-100 font-sans">
+  <div class="container mx-auto px-4 py-8 max-w-7xl">
+    <!-- Header -->
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-dark mb-2">Packages Management</h1>
+      <div class="w-20 h-1 bg-primary rounded-full"></div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Add/Edit Package Form -->
+      <div class="lg:col-span-1 bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-dark p-4">
+          <h2 class="text-xl font-semibold text-white">Add/Edit Package</h2>
+        </div>
+        <form id="packageForm" enctype="multipart/form-data" class="p-6 space-y-4">
+          <input type="hidden" name="packageId" id="packageId">
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Package Type:</label>
+            <select name="packageType" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="luxury">Luxury</option>
+            </select>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Title (EN):</label>
+              <input type="text" name="titleEn" placeholder="English title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Title (AR):</label>
+              <input type="text" name="titleAr" placeholder="Arabic title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+            </div>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Description (EN):</label>
+            <textarea name="descriptionEn" placeholder="English description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Description (AR):</label>
+            <textarea name="descriptionAr" placeholder="Arabic description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
+          </div>
+
+
+          <!-- Add these sections to your form, after the description fields and before the duration fields -->
+
+<!-- Overview Section -->
+<div class="space-y-4 pt-4 border-t border-gray-200">
+  <h3 class="text-lg font-medium text-dark">Overview</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Overview (EN):</label>
+      <textarea name="overviewEn" placeholder="Detailed package overview in English" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Overview (AR):</label>
+      <textarea name="overviewAr" placeholder="Detailed package overview in Arabic" rows="5" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
+    </div>
+  </div>
+</div>
+
+<!-- Highlights Section -->
+<div class="space-y-4 pt-4 border-t border-gray-200">
+  <div class="flex justify-between items-center">
+    <h3 class="text-lg font-medium text-dark">Package Highlights</h3>
+    <button type="button" onclick="addHighlight()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+      Add Highlight
+    </button>
+  </div>
+  <div id="highlightsContainer" class="space-y-2">
+    <!-- Highlights will be added here -->
+  </div>
+</div>
+
+<!-- FAQ Section -->
+<div class="space-y-4 pt-4 border-t border-gray-200">
+  <div class="flex justify-between items-center">
+    <h3 class="text-lg font-medium text-dark">Frequently Asked Questions</h3>
+    <button type="button" onclick="addFAQ()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+      Add FAQ
+    </button>
+  </div>
+  <div id="faqContainer" class="space-y-4">
+    <!-- FAQ items will be added here -->
+  </div>
+</div>
+
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Duration:</label>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <input type="number" name="nights" placeholder="Nights" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+              </div>
+              <div>
+                <input type="number" name="days" placeholder="Days" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Destinations (EN):</label>
+              <input type="text" name="destinationsEn" placeholder="Kochi to Alleppey" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Destinations (AR):</label>
+              <input type="text" name="destinationsAr" placeholder="Destinations in Arabic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Rating:</label>
+              <input type="number" name="rating" placeholder="4.9" min="0" max="5" step="0.1" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            </div>
+            
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-gray-700">Reviews Count:</label>
+              <input type="number" name="reviewsCount" placeholder="100" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+            </div>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Discount (%):</label>
+            <input type="number" name="discount" placeholder="10" min="0" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+          </div>
+          
+          <div class="flex items-center space-x-2">
+            <input type="checkbox" name="isFeatured" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+            <label class="text-sm font-medium text-gray-700">Featured</label>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Package Image:</label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div class="space-y-1 text-center">
+                <div class="flex text-sm text-gray-600">
+                  <label class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-primary-dark focus-within:outline-none">
+                    <span>Upload a file</span>
+                    <input type="file" name="image" class="sr-only">
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4 pt-4 border-t border-gray-200">
+            <h3 class="text-lg font-medium text-dark">Pricing</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Current Price:</label>
+                <input type="number" name="price" placeholder="Current price" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">Original Price:</label>
+                <input type="number" name="originalPrice" placeholder="Original price" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium text-dark">Itinerary</h3>
+              <button type="button" onclick="addItineraryDay()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                Add Day
+              </button>
+            </div>
+            <div id="itineraryContainer" class="space-y-4">
+              <!-- Itinerary days will be added here -->
+            </div>
+          </div>
+          
+          <div class="space-y-4 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium text-dark">Inclusions</h3>
+              <button type="button" onclick="addInclusion()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                Add Inclusion
+              </button>
+            </div>
+            <div id="inclusionsContainer" class="space-y-2">
+              <!-- Inclusions will be added here -->
+            </div>
+          </div>
+          
+          <div class="space-y-4 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+              <h3 class="text-lg font-medium text-dark">Exclusions</h3>
+              <button type="button" onclick="addExclusion()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                Add Exclusion
+              </button>
+            </div>
+            <div id="exclusionsContainer" class="space-y-2">
+              <!-- Exclusions will be added here -->
+            </div>
+          </div>
+          
+          <div class="pt-4 flex space-x-3 border-t border-gray-200">
+            <button type="submit" class="flex-1 bg-primary py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+              Save Package
+            </button>
+            <button type="button" id="cancelEdit" style="display:none;" class="flex-1 bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Current Packages -->
+      <div class="lg:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="bg-dark p-4">
+          <h2 class="text-xl font-semibold text-white">Current Packages</h2>
+        </div>
+        <div class="p-4 border-b border-gray-200">
+          <div class="flex space-x-2 overflow-x-auto pb-2">
+            <button onclick="filterPackages('standard')" class="filter-tab active px-4 py-2 rounded-full text-sm font-medium bg-primary text-white">
+              Standard
+            </button>
+            <button onclick="filterPackages('premium')" class="filter-tab px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-800 hover:bg-gray-300">
+              Premium
+            </button>
+            <button onclick="filterPackages('luxury')" class="filter-tab px-4 py-2 rounded-full text-sm font-medium bg-gray-200 text-gray-800 hover:bg-gray-300">
+              Luxury
+            </button>
+          </div>
+        </div>
+        <div id="packagesContainer" class="divide-y divide-gray-200">
+          <div class="p-6 text-center">
+            <div class="animate-pulse flex justify-center">
+              <div class="h-8 w-8 bg-primary rounded-full"></div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">Loading packages...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+      <div class="flex justify-center">
+        <svg class="animate-spin-slow h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+      <h3 class="mt-4 text-lg font-medium text-dark">Processing...</h3>
+      <p class="mt-1 text-sm text-gray-500">Please wait while we save your package</p>
+    </div>
+  </div>
+
+
+  <script>
+    const form = document.getElementById('packageForm');
+    const container = document.getElementById('packagesContainer');
+    const cancelEditBtn = document.getElementById('cancelEdit');
+    const itineraryContainer = document.getElementById('itineraryContainer');
+    const inclusionsContainer = document.getElementById('inclusionsContainer');
+    const exclusionsContainer = document.getElementById('exclusionsContainer');
+    let currentTab = 'standard';
+
+
+    // Add highlight
+function addHighlight(textEn = '', textAr = '') {
+  const highlightId = Date.now();
+  const highlightEl = document.createElement('div');
+  highlightEl.className = 'highlight-item flex items-center gap-2 fade-in';
+  highlightEl.innerHTML = `
+    <input type="text" name="highlightEn" value="${textEn}" placeholder="Highlight in English" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <input type="text" name="highlightAr" value="${textAr}" placeholder="Highlight in Arabic" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <button type="button" onclick="this.closest('.highlight-item').remove()" class="text-red-500 hover:text-red-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  `;
+  document.getElementById('highlightsContainer').appendChild(highlightEl);
+}
+
+// Add FAQ item
+function addFAQ(questionEn = '', questionAr = '', answerEn = '', answerAr = '') {
+  const faqId = Date.now();
+  const faqEl = document.createElement('div');
+  faqEl.className = 'faq-item bg-gray-50 p-4 rounded-lg fade-in';
+  faqEl.innerHTML = `
+    <div class="flex justify-between items-center mb-2">
+      <h4 class="font-medium text-dark">FAQ Item</h4>
+      <button type="button" onclick="this.closest('.faq-item').remove()" class="text-red-500 hover:text-red-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Question (EN):</label>
+        <input type="text" name="faqQuestionEn" value="${questionEn}" placeholder="Question in English" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+      </div>
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Question (AR):</label>
+        <input type="text" name="faqQuestionAr" value="${questionAr}" placeholder="Question in Arabic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Answer (EN):</label>
+        <textarea name="faqAnswerEn" rows="3" placeholder="Answer in English" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">${answerEn}</textarea>
+      </div>
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Answer (AR):</label>
+        <textarea name="faqAnswerAr" rows="3" placeholder="Answer in Arabic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">${answerAr}</textarea>
+      </div>
+    </div>
+  `;
+  document.getElementById('faqContainer').appendChild(faqEl);
+}
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    const formData = new FormData(form);
+    const packageId = document.getElementById('packageId').value;
+    
+    // Get all itinerary data
+    const itinerary = [];
+    const dayElements = itineraryContainer.querySelectorAll('.day-itinerary');
+    dayElements.forEach(dayEl => {
+      itinerary.push({
+        day: parseInt(dayEl.querySelector('[name="itineraryDay"]').value),
+        title: {
+          en: dayEl.querySelector('[name="itineraryTitle"]').value,
+          ar: dayEl.querySelector('[name="itineraryTitleAr"]').value
+        },
+        description: {
+          en: dayEl.querySelector('[name="itineraryDesc"]').value,
+          ar: dayEl.querySelector('[name="itineraryDescAr"]').value
+        },
+        activities: Array.from(dayEl.querySelectorAll('.activity-item')).map(actEl => ({
+          en: actEl.querySelector('[name="activity"]').value,
+          ar: actEl.querySelector('[name="activityAr"]').value
+        }))
+      });
+    });
+    
+    // Get inclusions and exclusions
+    const inclusions = Array.from(inclusionsContainer.querySelectorAll('.inclusion-item')).map(el => ({
+      en: el.querySelector('[name="inclusionEn"]').value,
+      ar: el.querySelector('[name="inclusionAr"]').value
+    })).filter(item => item.en || item.ar);
+    
+    const exclusions = Array.from(exclusionsContainer.querySelectorAll('.exclusion-item')).map(el => ({
+      en: el.querySelector('[name="exclusionEn"]').value,
+      ar: el.querySelector('[name="exclusionAr"]').value
+    })).filter(item => item.en || item.ar);
+
+    // Get overview data
+    const overview = {
+      en: form.querySelector('[name="overviewEn"]').value,
+      ar: form.querySelector('[name="overviewAr"]').value
+    };
+
+    // Get highlights data
+    const highlights = Array.from(document.querySelectorAll('.highlight-item')).map(el => ({
+      en: el.querySelector('[name="highlightEn"]').value,
+      ar: el.querySelector('[name="highlightAr"]').value
+    })).filter(item => item.en || item.ar);
+
+    // Get FAQ data
+    const faqs = Array.from(document.querySelectorAll('.faq-item')).map(el => ({
+      question: {
+        en: el.querySelector('[name="faqQuestionEn"]').value,
+        ar: el.querySelector('[name="faqQuestionAr"]').value
+      },
+      answer: {
+        en: el.querySelector('[name="faqAnswerEn"]').value,
+        ar: el.querySelector('[name="faqAnswerAr"]').value
+      }
+    })).filter(item => item.question.en || item.question.ar);
+    
+    // Add JSON data to formData
+    formData.append('itinerary', JSON.stringify(itinerary));
+    formData.append('inclusions', JSON.stringify(inclusions));
+    formData.append('exclusions', JSON.stringify(exclusions));
+    formData.append('overview', JSON.stringify(overview));
+    formData.append('highlights', JSON.stringify(highlights));
+    formData.append('faqs', JSON.stringify(faqs));
+    
+    // Debug: Log the collected data
+    console.log('Form data being sent:', {
+      itinerary,
+      inclusions,
+      exclusions,
+      overview,
+      highlights,
+      faqs
+    });
+
+    const url = packageId 
+      ? `http://localhost:5000/api/sections/${packageId}`
+      : 'http://localhost:5000/api/sections';
+      
+    const method = packageId ? 'PUT' : 'POST';
+    
+    // Show loading modal
+    document.getElementById('loadingModal').classList.remove('hidden');
+    
+    const response = await fetch(url, {
+      method,
+      body: formData
+    });
+    
+    // Hide loading modal
+    document.getElementById('loadingModal').classList.add('hidden');
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to save package');
+    }
+    
+    const responseData = await response.json();
+    alert(packageId ? 'Package updated successfully!' : 'Package created successfully!');
+    
+    // Reset form
+    form.reset();
+    clearItinerary();
+    clearDynamicFields('highlightsContainer');
+    clearDynamicFields('faqContainer');
+    clearDynamicFields('inclusionsContainer');
+    clearDynamicFields('exclusionsContainer');
+    document.getElementById('packageId').value = '';
+    cancelEditBtn.style.display = 'none';
+    
+    // Reload packages
+    loadPackages(currentTab);
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('loadingModal').classList.add('hidden');
+    alert(`Error: ${error.message}`);
+  }
+});
+
+    // Cancel edit
+    cancelEditBtn.addEventListener('click', () => {
+      form.reset();
+      clearItinerary();
+      clearDynamicFields();
+      document.getElementById('packageId').value = '';
+      cancelEditBtn.style.display = 'none';
+    });
+
+    // Filter packages by type
+    function filterPackages(type) {
+      currentTab = type;
+      document.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.remove('bg-gray-200', 'text-gray-800');
+        tab.classList.remove('bg-primary', 'text-white');
+        
+        if (tab.textContent.trim().toLowerCase() === type) {
+          tab.classList.add('bg-primary', 'text-white');
+        } else {
+          tab.classList.add('bg-gray-200', 'text-gray-800');
+        }
+      });
+      loadPackages(type);
+    }
+
+    // Load packages
+    // Load packages
+    async function loadPackages(type = 'standard') {
+      container.innerHTML = `
+        <div class="p-6 text-center">
+          <div class="animate-pulse flex justify-center">
+            <div class="h-8 w-8 bg-primary rounded-full"></div>
+          </div>
+          <p class="mt-2 text-sm text-gray-500">Loading packages...</p>
+        </div>
+      `;
+      
+      try {
+        const url =  `http://localhost:5000/api/sections?type=${type}`
+         
+          
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch packages');
+        
+        const packages = await res.json();
+        console.log('Packages', packages);
+        
+        if (packages.length === 0) {
+          container.innerHTML = '<p class="p-6 text-gray-500">No packages found</p>';
+          return;
+        }
+        
+        container.innerHTML = '';
+        packages.forEach(pkg => {
+          const card = createPackageCard(pkg);
+          container.appendChild(card);
+        });
+      } catch (error) {
+        console.error('Error loading packages:', error);
+        container.innerHTML = '<p class="p-6 text-red-500">Error loading packages. Please try again.</p>';
+      }
+    }
+
+    // Create package card
+    function createPackageCard(pkg) {
+      const card = document.createElement('div');
+      card.className = 'p-6 fade-in';
+      
+      const featuredBadge = pkg.isFeatured ? `
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 absolute top-2 right-2">
+          Featured
+        </span>
+      ` : '';
+      
+      const discountBadge = pkg.discount > 0 ? `
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 absolute top-2 left-2">
+          ${pkg.discount}% OFF
+        </span>
+      ` : '';
+      
+      const priceDisplay = pkg.details.price ? `
+        <div class="mt-2">
+          <span class="text-lg font-semibold text-primary">$${pkg.details.price}</span>
+          ${pkg.details.originalPrice ? `<span class="ml-2 text-sm text-gray-500 line-through">$${pkg.details.originalPrice}</span>` : ''}
+        </div>
+      ` : '';
+      
+      card.innerHTML = `
+        <div class="flex flex-col md:flex-row gap-4 relative">
+          ${featuredBadge}
+          ${discountBadge}
+          
+          <div class="flex-shrink-0 w-full md:w-48 h-48 rounded-lg overflow-hidden">
+            <img src="${pkg.imageUrl}" alt="${pkg.title.en}" class="w-full h-full object-cover">
+          </div>
+          
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-bold text-dark">${pkg.title.en}</h3>
+                <p class="text-sm text-gray-600">${pkg.title.ar}</p>
+              </div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                pkg.packageType === 'standard' ? 'bg-blue-100 text-blue-800' : 
+                pkg.packageType === 'premium' ? 'bg-purple-100 text-purple-800' : 
+                'bg-yellow-100 text-yellow-800'
+              }">
+                ${pkg.packageType.charAt(0).toUpperCase() + pkg.packageType.slice(1)}
+              </span>
+            </div>
+            
+            <p class="mt-1 text-sm text-gray-600 line-clamp-2">${pkg.description.en}</p>
+            <p class="mt-1 text-sm text-gray-600 line-clamp-2">${pkg.description.ar}</p>
+            
+            <div class="mt-2 flex items-center">
+              <div class="flex items-center">
+                <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                </svg>
+                <span class="ml-1 text-sm font-medium text-gray-700">${pkg.rating}</span>
+                <span class="mx-1 text-gray-500">•</span>
+                <span class="text-sm text-gray-500">${pkg.reviewsCount} reviews</span>
+              </div>
+            </div>
+            
+            <div class="mt-2 text-sm text-gray-600">
+              <span>${pkg.duration.nights} Nights / ${pkg.duration.days} Days</span>
+              <span class="mx-2">•</span>
+              <span>${pkg.destinations.en}</span>
+            </div>
+            
+            ${priceDisplay}
+            
+             <div class="mt-4 flex space-x-2">
+        <a href="package-details.html?id=${pkg._id}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+          View Details
+        </a>
+        <button onclick="editPackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+          Edit
+        </button>
+        <button onclick="deletePackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+          Delete
+        </button>
+      </div>
+          </div>
+        </div>
+      `;
+      
+      return card;
+    }
+
+// Edit package - Load data into form
+async function editPackage(packageId) {
+  try {
+    const response = await fetch(`http://localhost:5000/api/sections/${packageId}`);
+    if (!response.ok) throw new Error('Failed to fetch package');
+    
+    const pkg = await response.json();
+    
+    // Fill basic fields
+    document.getElementById('packageId').value = pkg._id;
+    document.querySelector('[name="packageType"]').value = pkg.packageType;
+    document.querySelector('[name="titleEn"]').value = pkg.title.en;
+    document.querySelector('[name="titleAr"]').value = pkg.title.ar;
+    document.querySelector('[name="descriptionEn"]').value = pkg.description.en;
+    document.querySelector('[name="descriptionAr"]').value = pkg.description.ar;
+    document.querySelector('[name="nights"]').value = pkg.duration.nights;
+    document.querySelector('[name="days"]').value = pkg.duration.days;
+    document.querySelector('[name="destinationsEn"]').value = pkg.destinations.en;
+    document.querySelector('[name="destinationsAr"]').value = pkg.destinations.ar;
+    document.querySelector('[name="rating"]').value = pkg.rating;
+    document.querySelector('[name="reviewsCount"]').value = pkg.reviewsCount;
+    document.querySelector('[name="discount"]').value = pkg.discount;
+    document.querySelector('[name="isFeatured"]').checked = pkg.isFeatured;
+    document.querySelector('[name="price"]').value = pkg.details.price;
+    document.querySelector('[name="originalPrice"]').value = pkg.details.originalPrice;
+
+     // Fill overview
+     document.querySelector('[name="overviewEn"]').value = pkg.overview.en;
+    document.querySelector('[name="overviewAr"]').value = pkg.overview.ar;
+    
+    // Clear and rebuild highlights
+    clearDynamicFields('highlightsContainer');
+    pkg.highlights.forEach(hl => {
+      addHighlight(hl.en, hl.ar);
+    });
+    
+    // Clear and rebuild FAQs
+    clearDynamicFields('faqContainer');
+    pkg.faqs.forEach(faq => {
+      addFAQ(faq.question.en, faq.question.ar, faq.answer.en, faq.answer.ar);
+    });
+    
+    // Clear and rebuild itinerary
+    clearItinerary();
+    pkg.details.itinerary.forEach(day => {
+      addItineraryDay(day.day, day.title.en, day.title.ar, day.description.en, day.description.ar, day.activities);
+    });
+    
+    // Clear and rebuild inclusions
+    clearDynamicFields('inclusionsContainer');
+    pkg.details.inclusions.forEach(inc => {
+      addInclusion(inc.en, inc.ar);
+    });
+    
+    // Clear and rebuild exclusions
+    clearDynamicFields('exclusionsContainer');
+    pkg.details.exclusions.forEach(exc => {
+      addExclusion(exc.en, exc.ar);
+    });
+    
+    // Show cancel button
+    cancelEditBtn.style.display = 'inline-flex';
+    
+    // Scroll to form
+    document.getElementById('packageForm').scrollIntoView({ behavior: 'smooth' });
+  } catch (error) {
+    console.error('Error loading package:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Delete package
+async function deletePackage(packageId) {
+  if (!confirm('Are you sure you want to delete this package?')) return;
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/sections/${packageId}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to delete package');
+    
+    alert('Package deleted successfully');
+    loadPackages(currentTab);
+  } catch (error) {
+    console.error('Error deleting package:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Add itinerary day
+function addItineraryDay(dayNumber = '', titleEn = '', titleAr = '', descEn = '', descAr = '', activities = []) {
+  const dayId = Date.now();
+  const dayEl = document.createElement('div');
+  dayEl.className = 'day-itinerary bg-gray-50 p-4 rounded-lg fade-in';
+  dayEl.innerHTML = `
+    <div class="flex justify-between items-center mb-2">
+      <h4 class="font-medium text-dark">Day <span class="day-number">${dayNumber || ''}</span></h4>
+      <button type="button" onclick="this.closest('.day-itinerary').remove()" class="text-red-500 hover:text-red-700">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+    <input type="hidden" name="itineraryDay" value="${dayNumber || ''}">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Title (EN):</label>
+        <input type="text" name="itineraryTitle" value="${titleEn}" placeholder="Day title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+      </div>
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Title (AR):</label>
+        <input type="text" name="itineraryTitleAr" value="${titleAr}" placeholder="Day title in Arabic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Description (EN):</label>
+        <textarea name="itineraryDesc" rows="2" placeholder="Day description" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>${descEn}</textarea>
+      </div>
+      <div class="space-y-1">
+        <label class="block text-sm font-medium text-gray-700">Description (AR):</label>
+        <textarea name="itineraryDescAr" rows="2" placeholder="Day description in Arabic" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>${descAr}</textarea>
+      </div>
+    </div>
+    
+    <div class="activities-container space-y-2 mb-3">
+      ${activities.map(act => `
+        <div class="activity-item flex items-center gap-2">
+          <input type="text" name="activity" value="${act.en}" placeholder="Activity" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+          <input type="text" name="activityAr" value="${act.ar}" placeholder="Activity in Arabic" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+          <button type="button" onclick="this.closest('.activity-item').remove()" class="text-red-500 hover:text-red-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      `).join('')}
+    </div>
+    
+    <button type="button" onclick="addActivity(this)" class="mt-2 inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+      Add Activity
+    </button>
+  `;
+  
+  itineraryContainer.appendChild(dayEl);
+}
+
+// Add activity to itinerary day
+function addActivity(button) {
+  const dayEl = button.closest('.day-itinerary');
+  const activitiesContainer = dayEl.querySelector('.activities-container');
+  
+  const activityEl = document.createElement('div');
+  activityEl.className = 'activity-item flex items-center gap-2 fade-in';
+  activityEl.innerHTML = `
+    <input type="text" name="activity" placeholder="Activity" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+    <input type="text" name="activityAr" placeholder="Activity in Arabic" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" required>
+    <button type="button" onclick="this.closest('.activity-item').remove()" class="text-red-500 hover:text-red-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  `;
+  
+  activitiesContainer.appendChild(activityEl);
+}
+
+// Add inclusion
+function addInclusion(textEn = '', textAr = '') {
+  const inclusionId = Date.now();
+  const inclusionEl = document.createElement('div');
+  inclusionEl.className = 'inclusion-item flex items-center gap-2 fade-in';
+  inclusionEl.innerHTML = `
+    <input type="text" name="inclusionEn" value="${textEn}" placeholder="Inclusion in English" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <input type="text" name="inclusionAr" value="${textAr}" placeholder="Inclusion in Arabic" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <button type="button" onclick="this.closest('.inclusion-item').remove()" class="text-red-500 hover:text-red-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  `;
+  inclusionsContainer.appendChild(inclusionEl);
+}
+
+// Add exclusion
+function addExclusion(textEn = '', textAr = '') {
+  const exclusionId = Date.now();
+  const exclusionEl = document.createElement('div');
+  exclusionEl.className = 'exclusion-item flex items-center gap-2 fade-in';
+  exclusionEl.innerHTML = `
+    <input type="text" name="exclusionEn" value="${textEn}" placeholder="Exclusion in English" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <input type="text" name="exclusionAr" value="${textAr}" placeholder="Exclusion in Arabic" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary">
+    <button type="button" onclick="this.closest('.exclusion-item').remove()" class="text-red-500 hover:text-red-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  `;
+  exclusionsContainer.appendChild(exclusionEl);
+}
+
+// Clear itinerary
+function clearItinerary() {
+      
+  itineraryContainer.innerHTML = '';
+}
+
+// Clear dynamic fields (inclusions/exclusions)
+function clearDynamicFields(containerId) {
+  const container = document.getElementById(containerId);
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      // Load standard packages by default
+      filterPackages('standard');
+      
+      // Add one inclusion and exclusion by default
+      addInclusion();
+      addExclusion();
+    });
+</script>
+   <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0AC174',
+            dark: '#1a1a1a',
+            light: '#f8f9fa',
+          },
+          animation: {
+            'spin-slow': 'spin 2s linear infinite',
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>
