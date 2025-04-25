@@ -14,6 +14,8 @@ app.use(bodyParser.json());
 // app.use('/uploads', express.static('uploads'))
 app.use('/api/sections', router)
 
+app.use(express.static('public'));
+
 
 app.listen(PORT , () => {
   console.log(`Server running on the PORT ${PORT}`);
