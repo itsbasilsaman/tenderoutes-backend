@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 // app.use('/uploads', express.static('uploads'))
 app.use('/api/sections', router)
 
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 app.listen(PORT , () => {
