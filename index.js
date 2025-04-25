@@ -3,6 +3,7 @@ const dotenv = require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
+const path = require('path'); // ✅ Add this
 const router = require('./routes/sectionRoute')
 const db = require('./db/connection')
 const app = express()
