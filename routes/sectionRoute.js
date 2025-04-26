@@ -93,7 +93,10 @@ router.post('/', upload.single('image'), async (req, res) => {
       rating, reviewsCount,
       discount, isFeatured,
       itinerary, inclusions, exclusions,
-      price, originalPrice
+      price, originalPrice,
+      overview,
+  highlights,
+  faqs
     } = req.body;
 
     // Basic validation
@@ -158,7 +161,10 @@ router.post('/', upload.single('image'), async (req, res) => {
         exclusions: parsedExclusions || [],
         price: price ? parseFloat(price) : 0,
         originalPrice: originalPrice ? parseFloat(originalPrice) : 0
-      }
+      },
+      overview: typeof overview === 'string' ? JSON.parse(overview) : overview,
+      highlights: typeof highlights === 'string' ? JSON.parse(highlights) : highlights,
+      faqs: typeof faqs === 'string' ? JSON.parse(faqs) : faqs
     });
 
     const savedPackage = await newPackage.save();
@@ -258,6 +264,34 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         return res.status(400).json({ error: 'Invalid exclusions format' });
       }
     }
+
+    // Similarly in the PUT route:
+if (overview) {
+  try {
+    package.overview = typeof overview === 'string' ? JSON.parse(overview) : overview;
+  } catch (err) {
+    console.error('Error parsing overview:', err);
+    return res.status(400).json({ error: 'Invalid overview format' });
+  }
+}
+
+if (highlights) {
+  try {
+    package.highlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
+  } catch (err) {
+    console.error('Error parsing highlights:', err);
+    return res.status(400).json({ error: 'Invalid highlights format' });
+  }
+}
+
+if (faqs) {
+  try {
+    package.faqs = typeof faqs === 'string' ? JSON.parse(faqs) : faqs;
+  } catch (err) {
+    console.error('Error parsing faqs:', err);
+    return res.status(400).json({ error: 'Invalid faqs format' });
+  }
+}
     
     if (price) package.details.price = parseFloat(price);
     if (originalPrice) package.details.originalPrice = parseFloat(originalPrice);

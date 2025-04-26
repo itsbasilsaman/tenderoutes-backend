@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Packages Admin Panel</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+ <!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
 
  
 </head>
@@ -292,6 +294,79 @@
       <h3 class="mt-4 text-lg font-medium text-dark">Processing...</h3>
       <p class="mt-1 text-sm text-gray-500">Please wait while we save your package</p>
     </div>
+  </div>
+
+  <div class="w-full h-full ">
+      <!-- Add this somewhere in your admin panel -->
+<div class="bg-white rounded-xl shadow-md overflow-hidden mt-8">
+  <div class="bg-dark p-4">
+    <h2 class="text-xl font-semibold text-white">Featured Packages</h2>
+  </div>
+  <div class="p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-medium">Currently Featured Packages</h3>
+      <button onclick="openAddFeaturedModal()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-primary hover:bg-primary-dark">
+        Add Featured Package
+      </button>
+    </div>
+    
+    <div id="featuredPackagesContainer" class="space-y-4">
+      <!-- Featured packages will be loaded here -->
+    </div>
+  </div>
+</div>
+
+<!-- Add Featured Package Modal -->
+<div id="addFeaturedModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+    <h3 class="text-lg font-medium mb-4">Add Package to Featured Section</h3>
+    
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Select Package</label>
+        <select id="featuredPackageSelect" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+          <!-- Packages will be loaded here -->
+        </select>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Title (EN)</label>
+          <input type="text" id="featuredTitleEn" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Title (AR)</label>
+          <input type="text" id="featuredTitleAr" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Subtitle (EN)</label>
+          <input type="text" id="featuredSubtitleEn" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Subtitle (AR)</label>
+          <input type="text" id="featuredSubtitleAr" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Destinations Count</label>
+        <input type="text" id="featuredDestinationsCount" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g. 15+ Destinations">
+      </div>
+      
+      <div class="flex justify-end space-x-3 pt-4">
+        <button onclick="closeAddFeaturedModal()" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+          Cancel
+        </button>
+        <button onclick="addFeaturedPackage()" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark">
+          Add Package
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
   </div>
 
 
@@ -621,7 +696,7 @@ function addFAQ(questionEn = '', questionAr = '', answerEn = '', answerAr = '') 
             ${priceDisplay}
             
              <div class="mt-4 flex space-x-2">
-        <a href="package-details.html?id=${pkg._id}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+        <a href="../package-details.html?id=${pkg._id}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           View Details
         </a>
         <button onclick="editPackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
@@ -884,6 +959,148 @@ function clearDynamicFields(containerId) {
         }
       }
     }
+  </script>
+  <script>
+    // Load featured packages
+async function loadFeaturedPackages() {
+  try {
+    const response = await fetch('http://localhost:5000/api/featured-packages');
+    if (!response.ok) throw new Error('Failed to fetch featured packages');
+    
+    const featuredPackages = await response.json();
+    const container = document.getElementById('featuredPackagesContainer');
+    
+    container.innerHTML = '';
+    
+    if (featuredPackages.length === 0) {
+      container.innerHTML = '<p class="text-gray-500">No featured packages yet</p>';
+      return;
+    }
+    
+    featuredPackages.forEach(pkg => {
+      const card = document.createElement('div');
+      card.className = 'bg-gray-50 p-4 rounded-lg flex items-center justify-between';
+      card.innerHTML = `
+        <div>
+          <h4 class="font-medium">${pkg.title.en}</h4>
+          <p class="text-sm text-gray-600">${pkg.subtitle.en}</p>
+          <p class="text-xs text-gray-500 mt-1">Destinations: ${pkg.destinationsCount}</p>
+        </div>
+        <div class="flex space-x-2">
+          <button onclick="editFeaturedPackage('${pkg._id}')" class="p-1 text-primary hover:text-primary-dark">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+            </svg>
+          </button>
+          <button onclick="removeFeaturedPackage('${pkg._id}')" class="p-1 text-red-500 hover:text-red-700">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error('Error loading featured packages:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Open add featured package modal
+async function openAddFeaturedModal() {
+  try {
+    // Load packages for dropdown
+    const response = await fetch('http://localhost:5000/api/sections');
+    if (!response.ok) throw new Error('Failed to fetch packages');
+    
+    const packages = await response.json();
+    const select = document.getElementById('featuredPackageSelect');
+    
+    select.innerHTML = '<option value="">Select a package</option>';
+    packages.forEach(pkg => {
+      const option = document.createElement('option');
+      option.value = pkg._id;
+      option.textContent = pkg.title.en;
+      select.appendChild(option);
+    });
+    
+    document.getElementById('addFeaturedModal').classList.remove('hidden');
+  } catch (error) {
+    console.error('Error opening modal:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Close add featured package modal
+function closeAddFeaturedModal() {
+  document.getElementById('addFeaturedModal').classList.add('hidden');
+}
+
+// Add featured package
+async function addFeaturedPackage() {
+  try {
+    const packageId = document.getElementById('featuredPackageSelect').value;
+    const titleEn = document.getElementById('featuredTitleEn').value;
+    const titleAr = document.getElementById('featuredTitleAr').value;
+    const subtitleEn = document.getElementById('featuredSubtitleEn').value;
+    const subtitleAr = document.getElementById('featuredSubtitleAr').value;
+    const destinationsCount = document.getElementById('featuredDestinationsCount').value;
+    
+    if (!packageId || !titleEn || !titleAr || !subtitleEn || !subtitleAr || !destinationsCount) {
+      throw new Error('All fields are required');
+    }
+    
+    const response = await fetch('http://localhost:5000/api/featured-packages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        packageId,
+        title: { en: titleEn, ar: titleAr },
+        subtitle: { en: subtitleEn, ar: subtitleAr },
+        destinationsCount
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add featured package');
+    }
+    
+    closeAddFeaturedModal();
+    loadFeaturedPackages();
+    alert('Package added to featured section successfully!');
+  } catch (error) {
+    console.error('Error adding featured package:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Remove featured package
+async function removeFeaturedPackage(id) {
+  if (!confirm('Are you sure you want to remove this package from featured section?')) return;
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/featured-packages/${id}`, {
+      method: 'DELETE'
+    });
+    
+    if (!response.ok) throw new Error('Failed to remove featured package');
+    
+    loadFeaturedPackages();
+    alert('Package removed from featured section');
+  } catch (error) {
+    console.error('Error removing featured package:', error);
+    alert(`Error: ${error.message}`);
+  }
+}
+
+// Initialize featured packages on page load
+document.addEventListener('DOMContentLoaded', () => {
+  loadFeaturedPackages();
+});
   </script>
 </body>
 </html>
