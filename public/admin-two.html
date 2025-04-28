@@ -654,8 +654,8 @@
           formData.append('faqs', JSON.stringify(faqs));
           
           const url = packageId 
-            ? `http://localhost:5000/api/sections/${packageId}`
-            : 'http://localhost:5000/api/sections';
+            ? `https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`
+            : 'https://tenderoutes-backend-4.onrender.com/api/sections';
             
           const method = packageId ? 'PUT' : 'POST';
           
