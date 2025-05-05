@@ -1,11 +1,32 @@
 const mongoose = require('mongoose');
-
+const slugify = require('slugify');
 const packageSchema = new mongoose.Schema({
   packageType: {
     type: String,
     enum: ['standard', 'premium', 'luxury'],
     required: true
   },
+  
+   // Add these new fields
+   metaTitle: {
+    en: { type: String },
+    ar: { type: String }
+  },
+  metaDescription: {
+    en: { type: String },
+    ar: { type: String }
+  },
+  metaKeywords: {
+    en: { type: String },
+    ar: { type: String }
+  },
+  slug: {
+    en: { type: String, unique: true },
+    ar: { type: String, unique: true }
+  },
+  ogImage: String,
+  ogImagePublicId: String,
+  canonicalUrl: String,
   title: {
     en: { type: String, required: true },
     ar: { type: String, required: true }
@@ -61,5 +82,18 @@ const packageSchema = new mongoose.Schema({
     }
   }]
 });
+
+
+// Pre-save hook to generate slugs
+packageSchema.pre('save', function(next) {
+  if (this.isModified('title.en')) {
+    this.slug.en = slugify(this.title.en, { lower: true, strict: true });
+  }
+  if (this.isModified('title.ar')) {
+    this.slug.ar = slugify(this.title.ar, { lower: true, strict: true });
+  }
+  next();
+});
+
 
 module.exports = mongoose.model("Package", packageSchema);

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const featuredPackageSchema = new mongoose.Schema({
   package: {
     type: mongoose.Schema.Types.ObjectId,

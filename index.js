@@ -16,7 +16,6 @@ app.use(bodyParser.json());
 // app.use('/uploads', express.static('uploads'))
 app.use('/api/sections', router)
 app.use('/api/featured-packages', featuredPackageRouter);
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 

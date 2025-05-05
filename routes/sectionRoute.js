@@ -3,7 +3,7 @@ const multer = require('multer');
 const Package = require('../models/package');
 const fs = require('fs');
 const { v2: cloudinary } = require('cloudinary');
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 // Cloudinary Configuration
 try {
@@ -48,6 +48,25 @@ const upload = multer({
   }
 });
 
+
+// GET package by slug
+router.get('/slug/:slug', async (req, res) => {
+  try {
+    const package = await Package.findOne({ 
+      $or: [
+        { 'slug.en': req.params.slug },
+        { 'slug.ar': req.params.slug }
+      ]
+    });
+    
+    if (!package) return res.status(404).json({ error: 'Package not found' });
+    res.json(package);
+  } catch (error) {
+    console.error('Error fetching package by slug:', error);
+    res.status(500).json({ error: 'Failed to fetch package' });
+  }
+});
+
 // GET All packages with optional filtering
 router.get('/', async (req, res) => {
   try {
@@ -81,9 +100,12 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// CREATE New package
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'ogImage', maxCount: 1 }
+]), async (req, res) => {
   try {
+    // Extract all fields from req.body
     const {
       packageType,
       titleEn, titleAr,
@@ -95,51 +117,39 @@ router.post('/', upload.single('image'), async (req, res) => {
       itinerary, inclusions, exclusions,
       price, originalPrice,
       overview,
-  highlights,
-  faqs
+      highlights,
+      faqs,
+      metaTitleEn, metaTitleAr,
+      metaDescriptionEn, metaDescriptionAr,
+      metaKeywordsEn, metaKeywordsAr,
+      canonicalUrl,
+      slugEn, slugAr
     } = req.body;
 
     // Basic validation
-    if (!packageType || !titleEn || !titleAr || !descriptionEn || !descriptionAr || 
-        !nights || !days || !destinationsEn || !destinationsAr) {
+    if (!packageType || !titleEn || !titleAr) {
       return res.status(400).json({ error: 'Required fields are missing' });
     }
 
-    let imageUrl = null;
-    let imagePublicId = null;
+    // Handle image uploads
+    let imageUrl, imagePublicId, ogImageUrl, ogImagePublicId;
 
-    // Handle image upload
-    if (req.file) {
-      try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: 'tenderoutes-packages',
-          transformation: { width: 1000, height: 700, crop: 'limit' }
-        });
-        
-        imageUrl = result.secure_url;
-        imagePublicId = result.public_id;
-        fs.unlinkSync(req.file.path);
-      } catch (uploadErr) {
-        console.error('Cloudinary upload error:', uploadErr);
-        return res.status(500).json({ 
-          error: 'Failed to upload image',
-          details: uploadErr.message 
-        });
-      }
+    if (req.files?.image) {
+      const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+        folder: 'tenderoutes-packages'
+      });
+      imageUrl = result.secure_url;
+      imagePublicId = result.public_id;
+      fs.unlinkSync(req.files.image[0].path);
     }
 
-    // Parse itinerary, inclusions, exclusions if they're strings
-    let parsedItinerary = itinerary;
-    let parsedInclusions = inclusions;
-    let parsedExclusions = exclusions;
-    
-    try {
-      if (typeof itinerary === 'string') parsedItinerary = JSON.parse(itinerary);
-      if (typeof inclusions === 'string') parsedInclusions = JSON.parse(inclusions);
-      if (typeof exclusions === 'string') parsedExclusions = JSON.parse(exclusions);
-    } catch (parseErr) {
-      console.error('Error parsing JSON fields:', parseErr);
-      return res.status(400).json({ error: 'Invalid JSON in itinerary/inclusions/exclusions' });
+    if (req.files?.ogImage) {
+      const result = await cloudinary.uploader.upload(req.files.ogImage[0].path, {
+        folder: 'tenderoutes-packages/og-images'
+      });
+      ogImageUrl = result.secure_url;
+      ogImagePublicId = result.public_id;
+      fs.unlinkSync(req.files.ogImage[0].path);
     }
 
     // Create new package
@@ -155,16 +165,23 @@ router.post('/', upload.single('image'), async (req, res) => {
       isFeatured: isFeatured === 'true',
       imageUrl,
       imagePublicId,
+      ogImage: ogImageUrl,
+      ogImagePublicId,
       details: {
-        itinerary: parsedItinerary || [],
-        inclusions: parsedInclusions || [],
-        exclusions: parsedExclusions || [],
+        itinerary: tryParseJSON(itinerary) || [],
+        inclusions: tryParseJSON(inclusions) || [],
+        exclusions: tryParseJSON(exclusions) || [],
         price: price ? parseFloat(price) : 0,
         originalPrice: originalPrice ? parseFloat(originalPrice) : 0
       },
-      overview: typeof overview === 'string' ? JSON.parse(overview) : overview,
-      highlights: typeof highlights === 'string' ? JSON.parse(highlights) : highlights,
-      faqs: typeof faqs === 'string' ? JSON.parse(faqs) : faqs
+      overview: tryParseJSON(overview) || { en: '', ar: '' },
+      highlights: tryParseJSON(highlights) || [],
+      faqs: tryParseJSON(faqs) || [],
+      metaTitle: { en: metaTitleEn, ar: metaTitleAr },
+      metaDescription: { en: metaDescriptionEn, ar: metaDescriptionAr },
+      metaKeywords: { en: metaKeywordsEn, ar: metaKeywordsAr },
+      canonicalUrl,
+      slug: { en: slugEn, ar: slugAr }
     });
 
     const savedPackage = await newPackage.save();
@@ -177,6 +194,18 @@ router.post('/', upload.single('image'), async (req, res) => {
     });
   }
 });
+
+// Helper function to safely parse JSON
+function tryParseJSON(jsonString) {
+  try {
+    if (typeof jsonString === 'string') {
+      return JSON.parse(jsonString);
+    }
+    return jsonString;
+  } catch (e) {
+    return null;
+  }
+}
 
 // UPDATE Package
 router.put('/:id', upload.single('image'), async (req, res) => {
@@ -194,7 +223,13 @@ router.put('/:id', upload.single('image'), async (req, res) => {
       rating, reviewsCount,
       discount, isFeatured,
       itinerary, inclusions, exclusions,
-      price, originalPrice
+      price, originalPrice,
+      
+      metaTitleEn, metaTitleAr,
+      metaDescriptionEn, metaDescriptionAr,
+      metaKeywordsEn, metaKeywordsAr,
+      canonicalUrl,
+      overview
     } = req.body;
 
     if (packageType) package.packageType = packageType;
@@ -210,6 +245,14 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     if (reviewsCount) package.reviewsCount = parseInt(reviewsCount);
     if (discount) package.discount = parseInt(discount);
     if (isFeatured) package.isFeatured = isFeatured === 'true';
+    // For PUT:
+if (metaTitleEn) package.metaTitle.en = metaTitleEn;
+if (metaTitleAr) package.metaTitle.ar = metaTitleAr;
+if (metaDescriptionEn) package.metaDescription.en = metaDescriptionEn;
+if (metaDescriptionAr) package.metaDescription.ar = metaDescriptionAr;
+if (metaKeywordsEn) package.metaKeywords.en = metaKeywordsEn;
+if (metaKeywordsAr) package.metaKeywords.ar = metaKeywordsAr;
+if (canonicalUrl) package.canonicalUrl = canonicalUrl;
 
     // Handle image update
     if (req.file) {
@@ -236,6 +279,13 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         });
       }
     }
+
+    // Handle OG image upload (similar to main image)
+if (req.files?.ogImage) {
+  // Upload logic similar to main image
+  package.ogImage = result.secure_url;
+  package.ogImagePublicId = result.public_id;
+}
 
     // Update details if provided
     if (itinerary) {

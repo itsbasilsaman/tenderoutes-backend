@@ -92,6 +92,87 @@
                             <option value="luxury">Luxury</option>
                         </select>
                     </div>
+
+                    <!-- Meta Tags Section -->
+<div class="space-y-4 pt-4 border-t border-gray-200">
+  <h3 class="text-lg font-medium text-gray-800 flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+    </svg>
+    SEO Meta Tags
+  </h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Title (EN):</label>
+      <input type="text" name="metaTitleEn" placeholder="English meta title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Title (AR):</label>
+      <input type="text" name="metaTitleAr" placeholder="Arabic meta title" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Description (EN):</label>
+      <textarea name="metaDescriptionEn" rows="2" placeholder="English meta description" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"></textarea>
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Description (AR):</label>
+      <textarea name="metaDescriptionAr" rows="2" placeholder="Arabic meta description" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"></textarea>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Keywords (EN):</label>
+      <input type="text" name="metaKeywordsEn" placeholder="English meta keywords (comma separated)" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Meta Keywords (AR):</label>
+      <input type="text" name="metaKeywordsAr" placeholder="Arabic meta keywords (comma separated)" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-gray-700">Canonical URL:</label>
+    <input type="text" name="canonicalUrl" placeholder="https://example.com/package" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+  </div>
+
+  <div class="space-y-2">
+    <label class="block text-sm font-medium text-gray-700">OG Image:</label>
+    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition duration-150">
+      <div class="space-y-1 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <div class="flex text-sm text-gray-600">
+          <label class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none transition duration-150">
+            <span>Upload OG Image</span>
+            <input type="file" name="ogImage" class="sr-only">
+          </label>
+          <p class="pl-1">or drag and drop</p>
+        </div>
+        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Slug Fields -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Custom URL Slug (EN):</label>
+      <input type="text" name="slugEn" placeholder="custom-url-slug" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+      <p class="text-xs text-gray-500">Leave blank to auto-generate from title</p>
+    </div>
+    <div class="space-y-2">
+      <label class="block text-sm font-medium text-gray-700">Custom URL Slug (AR):</label>
+      <input type="text" name="slugAr" placeholder="arabic-url-slug" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+      <p class="text-xs text-gray-500">Leave blank to auto-generate from title</p>
+    </div>
+  </div>
+</div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
@@ -517,6 +598,8 @@
             </div>
         </div>
     </div>
+    
+    
 
     <script>
       const form = document.getElementById('packageForm');
@@ -582,120 +665,124 @@
         document.getElementById('faqContainer').appendChild(faqEl);
       }
   
-      // Form submission
       form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-          const formData = new FormData(form);
-          const packageId = document.getElementById('packageId').value;
-          
-          // Get all itinerary data
-          const itinerary = [];
-          const dayElements = itineraryContainer.querySelectorAll('.day-itinerary');
-          dayElements.forEach(dayEl => {
-            itinerary.push({
-              day: parseInt(dayEl.querySelector('[name="itineraryDay"]').value),
-              title: {
-                en: dayEl.querySelector('[name="itineraryTitle"]').value,
-                ar: dayEl.querySelector('[name="itineraryTitleAr"]').value
-              },
-              description: {
-                en: dayEl.querySelector('[name="itineraryDesc"]').value,
-                ar: dayEl.querySelector('[name="itineraryDescAr"]').value
-              },
-              activities: Array.from(dayEl.querySelectorAll('.activity-item')).map(actEl => ({
-                en: actEl.querySelector('[name="activity"]').value,
-                ar: actEl.querySelector('[name="activityAr"]').value
-              }))
-            });
-          });
-          
-          // Get inclusions and exclusions
-          const inclusions = Array.from(inclusionsContainer.querySelectorAll('.inclusion-item')).map(el => ({
-            en: el.querySelector('[name="inclusionEn"]').value,
-            ar: el.querySelector('[name="inclusionAr"]').value
-          })).filter(item => item.en || item.ar);
-          
-          const exclusions = Array.from(exclusionsContainer.querySelectorAll('.exclusion-item')).map(el => ({
-            en: el.querySelector('[name="exclusionEn"]').value,
-            ar: el.querySelector('[name="exclusionAr"]').value
-          })).filter(item => item.en || item.ar);
-  
-          // Get overview data
-          const overview = {
-            en: form.querySelector('[name="overviewEn"]').value,
-            ar: form.querySelector('[name="overviewAr"]').value
-          };
-  
-          // Get highlights data
-          const highlights = Array.from(document.querySelectorAll('.highlight-item')).map(el => ({
-            en: el.querySelector('[name="highlightEn"]').value,
-            ar: el.querySelector('[name="highlightAr"]').value
-          })).filter(item => item.en || item.ar);
-  
-          // Get FAQ data
-          const faqs = Array.from(document.querySelectorAll('.faq-item')).map(el => ({
-            question: {
-              en: el.querySelector('[name="faqQuestionEn"]').value,
-              ar: el.querySelector('[name="faqQuestionAr"]').value
-            },
-            answer: {
-              en: el.querySelector('[name="faqAnswerEn"]').value,
-              ar: el.querySelector('[name="faqAnswerAr"]').value
-            }
-          })).filter(item => item.question.en || item.question.ar);
-          
-          // Add JSON data to formData
-          formData.append('itinerary', JSON.stringify(itinerary));
-          formData.append('inclusions', JSON.stringify(inclusions));
-          formData.append('exclusions', JSON.stringify(exclusions));
-          formData.append('overview', JSON.stringify(overview));
-          formData.append('highlights', JSON.stringify(highlights));
-          formData.append('faqs', JSON.stringify(faqs));
-          
-          const url = packageId 
-            ? `https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`
-            : 'https://tenderoutes-backend-4.onrender.com/api/sections';
-            
-          const method = packageId ? 'PUT' : 'POST';
-          
-          // Show loading modal
-          document.getElementById('loadingModal').classList.remove('hidden');
-          
-          const response = await fetch(url, {
-            method,
-            body: formData
-          });
-          
-          // Hide loading modal
-          document.getElementById('loadingModal').classList.add('hidden');
-          
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to save package');
-          }
-          
-          const responseData = await response.json();
-          alert(packageId ? 'Package updated successfully!' : 'Package created successfully!');
-          
-          // Reset form
-          form.reset();
-          clearItinerary();
-          clearDynamicFields('highlightsContainer');
-          clearDynamicFields('faqContainer');
-          clearDynamicFields('inclusionsContainer');
-          clearDynamicFields('exclusionsContainer');
-          document.getElementById('packageId').value = '';
-          cancelEditBtn.style.display = 'none';
-          
-          // Reload packages
-          loadPackages(currentTab);
-        } catch (error) {
-          console.error('Error:', error);
-          document.getElementById('loadingModal').classList.add('hidden');
-          alert(`Error: ${error.message}`);
-        }
+  e.preventDefault();
+  try {
+    const formData = new FormData(form);
+    const packageId = document.getElementById('packageId').value;
+    
+    // Get all dynamic data
+    const itinerary = [];
+    const dayElements = itineraryContainer.querySelectorAll('.day-itinerary');
+    dayElements.forEach(dayEl => {
+      itinerary.push({
+        day: parseInt(dayEl.querySelector('[name="itineraryDay"]').value),
+        title: {
+          en: dayEl.querySelector('[name="itineraryTitle"]').value,
+          ar: dayEl.querySelector('[name="itineraryTitleAr"]').value
+        },
+        description: {
+          en: dayEl.querySelector('[name="itineraryDesc"]').value,
+          ar: dayEl.querySelector('[name="itineraryDescAr"]').value
+        },
+        activities: Array.from(dayEl.querySelectorAll('.activity-item')).map(actEl => ({
+          en: actEl.querySelector('[name="activity"]').value,
+          ar: actEl.querySelector('[name="activityAr"]').value
+        }))
       });
+    });
+    
+    // Get inclusions and exclusions
+    const inclusions = Array.from(inclusionsContainer.querySelectorAll('.inclusion-item')).map(el => ({
+      en: el.querySelector('[name="inclusionEn"]').value,
+      ar: el.querySelector('[name="inclusionAr"]').value
+    })).filter(item => item.en || item.ar);
+    
+    const exclusions = Array.from(exclusionsContainer.querySelectorAll('.exclusion-item')).map(el => ({
+      en: el.querySelector('[name="exclusionEn"]').value,
+      ar: el.querySelector('[name="exclusionAr"]').value
+    })).filter(item => item.en || item.ar);
+
+    // Get overview, highlights, and faqs
+    const overview = {
+      en: form.querySelector('[name="overviewEn"]').value,
+      ar: form.querySelector('[name="overviewAr"]').value
+    };
+
+    const highlights = Array.from(document.querySelectorAll('.highlight-item')).map(el => ({
+      en: el.querySelector('[name="highlightEn"]').value,
+      ar: el.querySelector('[name="highlightAr"]').value
+    })).filter(item => item.en || item.ar);
+
+    const faqs = Array.from(document.querySelectorAll('.faq-item')).map(el => ({
+      question: {
+        en: el.querySelector('[name="faqQuestionEn"]').value,
+        ar: el.querySelector('[name="faqQuestionAr"]').value
+      },
+      answer: {
+        en: el.querySelector('[name="faqAnswerEn"]').value,
+        ar: el.querySelector('[name="faqAnswerAr"]').value
+      }
+    })).filter(item => item.question.en || item.question.ar);
+    
+    // Add JSON data to formData
+    formData.append('itinerary', JSON.stringify(itinerary));
+    formData.append('inclusions', JSON.stringify(inclusions));
+    formData.append('exclusions', JSON.stringify(exclusions));
+    formData.append('overview', JSON.stringify(overview));
+    formData.append('highlights', JSON.stringify(highlights));
+    formData.append('faqs', JSON.stringify(faqs));
+
+    const url = packageId 
+      ? `http://localhost:5000/api/sections/${packageId}`
+      : 'http://localhost:5000/api/sections';
+      
+    const method = packageId ? 'PUT' : 'POST';
+    
+    // Show loading modal
+    document.getElementById('loadingModal').classList.remove('hidden');
+    
+    const response = await fetch(url, {
+      method,
+      body: formData // Let browser set Content-Type automatically
+    });
+    
+    // First check if response is OK
+    if (!response.ok) {
+      // Try to get error message
+      let errorMsg = 'Failed to save package';
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.error || errorMsg;
+      } catch (e) {
+        // If can't parse as JSON, get text
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+      }
+      throw new Error(errorMsg);
+    }
+    
+    const responseData = await response.json();
+    alert(packageId ? 'Package updated successfully!' : 'Package created successfully!');
+    
+    // Reset form
+    form.reset();
+    clearItinerary();
+    clearDynamicFields('highlightsContainer');
+    clearDynamicFields('faqContainer');
+    clearDynamicFields('inclusionsContainer');
+    clearDynamicFields('exclusionsContainer');
+    document.getElementById('packageId').value = '';
+    cancelEditBtn.style.display = 'none';
+    
+    // Reload packages
+    loadPackages(currentTab);
+  } catch (error) {
+    console.error('Error:', error);
+    document.getElementById('loadingModal').classList.add('hidden');
+    alert(`Error: ${error.message}`);
+  }
+});
   
       // Cancel edit
       cancelEditBtn.addEventListener('click', () => {
@@ -737,7 +824,7 @@
         `;
         
         try {
-          const url = `https://tenderoutes-backend-4.onrender.com/api/sections?type=${type}`;
+          const url = `http://localhost:5000/api/sections?type=${type}`;
           const res = await fetch(url);
           if (!res.ok) throw new Error('Failed to fetch packages');
           
@@ -850,7 +937,7 @@
       // Edit package - Load data into form
       async function editPackage(packageId) {
         try {
-          const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`);
+          const response = await fetch(`http://localhost:5000/api/sections/${packageId}`);
           if (!response.ok) throw new Error('Failed to fetch package');
           
           const pkg = await response.json();
@@ -923,7 +1010,7 @@
         if (!confirm('Are you sure you want to delete this package?')) return;
         
         try {
-          const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`, {
+          const response = await fetch(`http://localhost:5000/api/sections/${packageId}`, {
             method: 'DELETE'
           });
           
@@ -1075,7 +1162,7 @@
       // Load featured packages
   async function loadFeaturedPackages() {
     try {
-      const response = await fetch(' https://tenderoutes-backend-4.onrender.com/api/featured-packages');
+      const response = await fetch(' http://localhost:5000/api/featured-packages');
       if (!response.ok) throw new Error('Failed to fetch featured packages');
       
       const featuredPackages = await response.json();
@@ -1122,7 +1209,7 @@
   async function openAddFeaturedModal() {
     try {
       // Load packages for dropdown
-      const response = await fetch('https://tenderoutes-backend-4.onrender.com/api/sections');
+      const response = await fetch('http://localhost:5000/api/sections');
       if (!response.ok) throw new Error('Failed to fetch packages');
       
       const packages = await response.json();
@@ -1162,7 +1249,7 @@
         throw new Error('All fields are required');
       }
       
-      const response = await fetch('https://tenderoutes-backend-4.onrender.com/api/featured-packages', {
+      const response = await fetch('http://localhost:5000/api/featured-packages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1194,7 +1281,7 @@
     if (!confirm('Are you sure you want to remove this package from featured section?')) return;
     
     try {
-      const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/featured-packages/${id}`, {
+      const response = await fetch(`http://localhost:5000/api/featured-packages/${id}`, {
         method: 'DELETE'
       });
       

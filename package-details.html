@@ -3,6 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Package Details</title>
+  <head>
+    <!-- Dynamic SEO Tags -->
+    <title>{{ seo.title }}</title>
+    <meta name="description" content="{{ seo.description }}">
+    <meta name="keywords" content="{{ seo.keywords }}">
+    <link rel="canonical" href="{{ seo.canonical }}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ currentUrl }}">
+    <meta property="og:title" content="{{ seo.title }}">
+    <meta property="og:description" content="{{ seo.description }}">
+    <meta property="og:image" content="{{ seo.ogImage }}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ currentUrl }}">
+    <meta property="twitter:title" content="{{ seo.title }}">
+    <meta property="twitter:description" content="{{ seo.description }}">
+    <meta property="twitter:image" content="{{ seo.ogImage }}">
+  </head>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/6.11.0/css/flag-icons.min.css">
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
