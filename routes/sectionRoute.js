@@ -212,25 +212,37 @@ router.put('/:id', upload.fields([
   { name: 'image', maxCount: 1 },
   { name: 'ogImage', maxCount: 1 }
 ]), async (req, res) => {
+  console.log('PUT request received for package:', req.params.id);
+  console.log('Request body fields:', Object.keys(req.body));
+  console.log('Request files:', req.files);
+
   try {
     const package = await Package.findById(req.params.id);
-    if (!package) return res.status(404).json({ error: 'Package not found' });
+    if (!package) {
+      console.log('Package not found:', req.params.id);
+      return res.status(404).json({ error: 'Package not found' });
+    }
 
-    // Update all possible fields
-    const fieldsToUpdate = [
-      'packageType', 'nights', 'days', 'rating', 'reviewsCount', 'discount',
-      'price', 'originalPrice', 'metaTitleEn', 'metaTitleAr', 'metaDescriptionEn',
-      'metaDescriptionAr', 'metaKeywordsEn', 'metaKeywordsAr', 'canonicalUrl',
-      'slugEn', 'slugAr'
+    console.log('Existing package found:', package._id);
+
+    // Update all fields from request body
+    const updateFields = [
+      'packageType', 'titleEn', 'titleAr', 'descriptionEn', 'descriptionAr',
+      'nights', 'days', 'destinationsEn', 'destinationsAr', 'rating',
+      'reviewsCount', 'discount', 'isFeatured', 'price', 'originalPrice',
+      'metaTitleEn', 'metaTitleAr', 'metaDescriptionEn', 'metaDescriptionAr',
+      'metaKeywordsEn', 'metaKeywordsAr', 'canonicalUrl', 'slugEn', 'slugAr'
     ];
 
-    fieldsToUpdate.forEach(field => {
+    updateFields.forEach(field => {
       if (req.body[field] !== undefined) {
+        console.log(`Updating field ${field} with value:`, req.body[field]);
         // Handle nested fields
-        if (field.includes('En') || field.includes('Ar')) {
-          const [parent, lang] = field.split(/(?=[A-Z])/);
-          const parentField = parent.toLowerCase();
-          package[parentField][lang.toLowerCase()] = req.body[field];
+        if (field.endsWith('En') || field.endsWith('Ar')) {
+          const baseField = field.replace(/En$|Ar$/, '');
+          const lang = field.slice(-2).toLowerCase();
+          if (!package[baseField]) package[baseField] = {};
+          package[baseField][lang] = req.body[field];
         } else {
           package[field] = req.body[field];
         }
@@ -242,68 +254,85 @@ router.put('/:id', upload.fields([
       package.isFeatured = req.body.isFeatured === 'true';
     }
 
-    // Handle title and description
-    if (req.body.titleEn) package.title.en = req.body.titleEn;
-    if (req.body.titleAr) package.title.ar = req.body.titleAr;
-    if (req.body.descriptionEn) package.description.en = req.body.descriptionEn;
-    if (req.body.descriptionAr) package.description.ar = req.body.descriptionAr;
-    if (req.body.destinationsEn) package.destinations.en = req.body.destinationsEn;
-    if (req.body.destinationsAr) package.destinations.ar = req.body.destinationsAr;
-
     // Handle image uploads
     if (req.files?.image) {
-      // Delete old image if exists
-      if (package.imagePublicId) {
-        await cloudinary.uploader.destroy(package.imagePublicId);
-      }
+      console.log('Processing image upload...');
+      try {
+        // Delete old image if exists
+        if (package.imagePublicId) {
+          await cloudinary.uploader.destroy(package.imagePublicId);
+        }
 
-      // Upload new image
-      const result = await cloudinary.uploader.upload(req.files.image[0].path, {
-        folder: 'tenderoutes-packages'
-      });
-      package.imageUrl = result.secure_url;
-      package.imagePublicId = result.public_id;
-      fs.unlinkSync(req.files.image[0].path);
+        // Upload new image
+        const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+          folder: 'tenderoutes-packages'
+        });
+        package.imageUrl = result.secure_url;
+        package.imagePublicId = result.public_id;
+        fs.unlinkSync(req.files.image[0].path);
+        console.log('Image updated successfully');
+      } catch (uploadError) {
+        console.error('Image upload failed:', uploadError);
+        throw uploadError;
+      }
     }
 
     // Handle OG image upload
     if (req.files?.ogImage) {
-      // Delete old OG image if exists
-      if (package.ogImagePublicId) {
-        await cloudinary.uploader.destroy(package.ogImagePublicId);
-      }
+      console.log('Processing OG image upload...');
+      try {
+        // Delete old OG image if exists
+        if (package.ogImagePublicId) {
+          await cloudinary.uploader.destroy(package.ogImagePublicId);
+        }
 
-      // Upload new OG image
-      const result = await cloudinary.uploader.upload(req.files.ogImage[0].path, {
-        folder: 'tenderoutes-packages/og-images'
-      });
-      package.ogImage = result.secure_url;
-      package.ogImagePublicId = result.public_id;
-      fs.unlinkSync(req.files.ogImage[0].path);
+        // Upload new OG image
+        const result = await cloudinary.uploader.upload(req.files.ogImage[0].path, {
+          folder: 'tenderoutes-packages/og-images'
+        });
+        package.ogImage = result.secure_url;
+        package.ogImagePublicId = result.public_id;
+        fs.unlinkSync(req.files.ogImage[0].path);
+        console.log('OG image updated successfully');
+      } catch (uploadError) {
+        console.error('OG image upload failed:', uploadError);
+        throw uploadError;
+      }
     }
 
     // Handle JSON fields
     const jsonFields = ['itinerary', 'inclusions', 'exclusions', 'overview', 'highlights', 'faqs'];
     jsonFields.forEach(field => {
       if (req.body[field]) {
+        console.log(`Processing JSON field ${field}...`);
         try {
-          package[field === 'overview' ? field : `details.${field}`] = 
-            typeof req.body[field] === 'string' ? JSON.parse(req.body[field]) : req.body[field];
+          const parsedValue = typeof req.body[field] === 'string' ? 
+            JSON.parse(req.body[field]) : 
+            req.body[field];
+          
+          if (field === 'overview') {
+            package.overview = parsedValue;
+          } else {
+            package.details[field] = parsedValue;
+          }
         } catch (err) {
           console.error(`Error parsing ${field}:`, err);
-          return res.status(400).json({ error: `Invalid ${field} format` });
+          throw new Error(`Invalid ${field} format`);
         }
       }
     });
 
     package.updatedAt = Date.now();
+    console.log('Saving updated package...');
     const updatedPackage = await package.save();
+    console.log('Package updated successfully:', updatedPackage._id);
     res.json(updatedPackage);
   } catch (error) {
-    console.error('Error updating package:', error);
+    console.error('Full error stack:', error.stack);
     res.status(500).json({ 
       error: 'Failed to update package',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });

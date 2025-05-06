@@ -667,6 +667,8 @@
   
       form.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const loadingModal = document.getElementById('loadingModal');
+  loadingModal.classList.remove('hidden');
   try {
     const formData = new FormData(form);
     const packageId = document.getElementById('packageId').value;
@@ -741,28 +743,19 @@
     
     const response = await fetch(url, {
       method,
-      body: formData // Let browser set Content-Type automatically
+      body: formData
     });
     
-    // First check if response is OK
     if (!response.ok) {
-      // Try to get error message
-      let errorMsg = 'Failed to save package';
-      try {
-        const errorData = await response.json();
-        errorMsg = errorData.error || errorMsg;
-      } catch (e) {
-        // If can't parse as JSON, get text
-        const text = await response.text();
-        errorMsg = text || errorMsg;
-      }
-      throw new Error(errorMsg);
+      const errorData = await response.json();
+      console.error('Server error details:', errorData);
+      throw new Error(errorData.message || 'Failed to save package');
     }
     
     const responseData = await response.json();
-    alert(packageId ? 'Package updated successfully!' : 'Package created successfully!');
+    console.log('Success:', responseData);
     
-    // Reset form
+    // Reset form and UI
     form.reset();
     clearItinerary();
     clearDynamicFields('highlightsContainer');
@@ -772,12 +765,16 @@
     document.getElementById('packageId').value = '';
     cancelEditBtn.style.display = 'none';
     
+    // Show success message
+    alert(packageId ? 'Package updated successfully!' : 'Package created successfully!');
+    
     // Reload packages
     loadPackages(currentTab);
   } catch (error) {
-    console.error('Error:', error);
-    document.getElementById('loadingModal').classList.add('hidden');
-    alert(`Error: ${error.message}`);
+    console.error('Full error:', error);
+    alert(`Error: ${error.message}\nCheck console for details`);
+  } finally {
+    loadingModal.classList.add('hidden');
   }
 });
   
