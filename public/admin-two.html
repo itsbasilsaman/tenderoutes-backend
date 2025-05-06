@@ -696,12 +696,12 @@
     const inclusions = Array.from(inclusionsContainer.querySelectorAll('.inclusion-item')).map(el => ({
       en: el.querySelector('[name="inclusionEn"]').value,
       ar: el.querySelector('[name="inclusionAr"]').value
-    })).filter(item => item.en || item.ar);
+    }));
     
     const exclusions = Array.from(exclusionsContainer.querySelectorAll('.exclusion-item')).map(el => ({
       en: el.querySelector('[name="exclusionEn"]').value,
       ar: el.querySelector('[name="exclusionAr"]').value
-    })).filter(item => item.en || item.ar);
+    }));
 
     // Get overview, highlights, and faqs
     const overview = {
@@ -712,7 +712,7 @@
     const highlights = Array.from(document.querySelectorAll('.highlight-item')).map(el => ({
       en: el.querySelector('[name="highlightEn"]').value,
       ar: el.querySelector('[name="highlightAr"]').value
-    })).filter(item => item.en || item.ar);
+    }));
 
     const faqs = Array.from(document.querySelectorAll('.faq-item')).map(el => ({
       question: {
@@ -723,7 +723,7 @@
         en: el.querySelector('[name="faqAnswerEn"]').value,
         ar: el.querySelector('[name="faqAnswerAr"]').value
       }
-    })).filter(item => item.question.en || item.question.ar);
+    }));
     
     // Add JSON data to formData
     formData.append('itinerary', JSON.stringify(itinerary));
@@ -738,9 +738,6 @@
       : 'https://tenderoutes-backend-4.onrender.com/api/sections';
       
     const method = packageId ? 'PUT' : 'POST';
-    
-    // Show loading modal
-    document.getElementById('loadingModal').classList.remove('hidden');
     
     const response = await fetch(url, {
       method,

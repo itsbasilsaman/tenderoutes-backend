@@ -208,143 +208,93 @@ function tryParseJSON(jsonString) {
 }
 
 // UPDATE Package
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', upload.fields([
+  { name: 'image', maxCount: 1 },
+  { name: 'ogImage', maxCount: 1 }
+]), async (req, res) => {
   try {
     const package = await Package.findById(req.params.id);
     if (!package) return res.status(404).json({ error: 'Package not found' });
 
-    // Update fields from request body
-    const {
-      packageType,
-      titleEn, titleAr,
-      descriptionEn, descriptionAr,
-      nights, days,
-      destinationsEn, destinationsAr,
-      rating, reviewsCount,
-      discount, isFeatured,
-      itinerary, inclusions, exclusions,
-      price, originalPrice,
-      
-      metaTitleEn, metaTitleAr,
-      metaDescriptionEn, metaDescriptionAr,
-      metaKeywordsEn, metaKeywordsAr,
-      canonicalUrl,
-      overview
-    } = req.body;
+    // Update all possible fields
+    const fieldsToUpdate = [
+      'packageType', 'nights', 'days', 'rating', 'reviewsCount', 'discount',
+      'price', 'originalPrice', 'metaTitleEn', 'metaTitleAr', 'metaDescriptionEn',
+      'metaDescriptionAr', 'metaKeywordsEn', 'metaKeywordsAr', 'canonicalUrl',
+      'slugEn', 'slugAr'
+    ];
 
-    if (packageType) package.packageType = packageType;
-    if (titleEn) package.title.en = titleEn;
-    if (titleAr) package.title.ar = titleAr;
-    if (descriptionEn) package.description.en = descriptionEn;
-    if (descriptionAr) package.description.ar = descriptionAr;
-    if (nights) package.duration.nights = parseInt(nights);
-    if (days) package.duration.days = parseInt(days);
-    if (destinationsEn) package.destinations.en = destinationsEn;
-    if (destinationsAr) package.destinations.ar = destinationsAr;
-    if (rating) package.rating = parseFloat(rating);
-    if (reviewsCount) package.reviewsCount = parseInt(reviewsCount);
-    if (discount) package.discount = parseInt(discount);
-    if (isFeatured) package.isFeatured = isFeatured === 'true';
-    // For PUT:
-if (metaTitleEn) package.metaTitle.en = metaTitleEn;
-if (metaTitleAr) package.metaTitle.ar = metaTitleAr;
-if (metaDescriptionEn) package.metaDescription.en = metaDescriptionEn;
-if (metaDescriptionAr) package.metaDescription.ar = metaDescriptionAr;
-if (metaKeywordsEn) package.metaKeywords.en = metaKeywordsEn;
-if (metaKeywordsAr) package.metaKeywords.ar = metaKeywordsAr;
-if (canonicalUrl) package.canonicalUrl = canonicalUrl;
-
-    // Handle image update
-    if (req.file) {
-      try {
-        // Delete old image if exists
-        if (package.imagePublicId) {
-          await cloudinary.uploader.destroy(package.imagePublicId);
+    fieldsToUpdate.forEach(field => {
+      if (req.body[field] !== undefined) {
+        // Handle nested fields
+        if (field.includes('En') || field.includes('Ar')) {
+          const [parent, lang] = field.split(/(?=[A-Z])/);
+          const parentField = parent.toLowerCase();
+          package[parentField][lang.toLowerCase()] = req.body[field];
+        } else {
+          package[field] = req.body[field];
         }
-
-        // Upload new image
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: 'tenderoutes-packages',
-          transformation: { width: 1000, height: 700, crop: 'limit' }
-        });
-
-        package.imageUrl = result.secure_url;
-        package.imagePublicId = result.public_id;
-        fs.unlinkSync(req.file.path);
-      } catch (uploadErr) {
-        console.error('Cloudinary upload error:', uploadErr);
-        return res.status(500).json({ 
-          error: 'Failed to update image',
-          details: uploadErr.message 
-        });
       }
+    });
+
+    // Handle boolean fields
+    if (req.body.isFeatured !== undefined) {
+      package.isFeatured = req.body.isFeatured === 'true';
     }
 
-    // Handle OG image upload (similar to main image)
-if (req.files?.ogImage) {
-  // Upload logic similar to main image
-  package.ogImage = result.secure_url;
-  package.ogImagePublicId = result.public_id;
-}
+    // Handle title and description
+    if (req.body.titleEn) package.title.en = req.body.titleEn;
+    if (req.body.titleAr) package.title.ar = req.body.titleAr;
+    if (req.body.descriptionEn) package.description.en = req.body.descriptionEn;
+    if (req.body.descriptionAr) package.description.ar = req.body.descriptionAr;
+    if (req.body.destinationsEn) package.destinations.en = req.body.destinationsEn;
+    if (req.body.destinationsAr) package.destinations.ar = req.body.destinationsAr;
 
-    // Update details if provided
-    if (itinerary) {
-      try {
-        package.details.itinerary = typeof itinerary === 'string' ? JSON.parse(itinerary) : itinerary;
-      } catch (err) {
-        console.error('Error parsing itinerary:', err);
-        return res.status(400).json({ error: 'Invalid itinerary format' });
+    // Handle image uploads
+    if (req.files?.image) {
+      // Delete old image if exists
+      if (package.imagePublicId) {
+        await cloudinary.uploader.destroy(package.imagePublicId);
       }
-    }
-    
-    if (inclusions) {
-      try {
-        package.details.inclusions = typeof inclusions === 'string' ? JSON.parse(inclusions) : inclusions;
-      } catch (err) {
-        console.error('Error parsing inclusions:', err);
-        return res.status(400).json({ error: 'Invalid inclusions format' });
-      }
-    }
-    
-    if (exclusions) {
-      try {
-        package.details.exclusions = typeof exclusions === 'string' ? JSON.parse(exclusions) : exclusions;
-      } catch (err) {
-        console.error('Error parsing exclusions:', err);
-        return res.status(400).json({ error: 'Invalid exclusions format' });
-      }
+
+      // Upload new image
+      const result = await cloudinary.uploader.upload(req.files.image[0].path, {
+        folder: 'tenderoutes-packages'
+      });
+      package.imageUrl = result.secure_url;
+      package.imagePublicId = result.public_id;
+      fs.unlinkSync(req.files.image[0].path);
     }
 
-    // Similarly in the PUT route:
-if (overview) {
-  try {
-    package.overview = typeof overview === 'string' ? JSON.parse(overview) : overview;
-  } catch (err) {
-    console.error('Error parsing overview:', err);
-    return res.status(400).json({ error: 'Invalid overview format' });
-  }
-}
+    // Handle OG image upload
+    if (req.files?.ogImage) {
+      // Delete old OG image if exists
+      if (package.ogImagePublicId) {
+        await cloudinary.uploader.destroy(package.ogImagePublicId);
+      }
 
-if (highlights) {
-  try {
-    package.highlights = typeof highlights === 'string' ? JSON.parse(highlights) : highlights;
-  } catch (err) {
-    console.error('Error parsing highlights:', err);
-    return res.status(400).json({ error: 'Invalid highlights format' });
-  }
-}
+      // Upload new OG image
+      const result = await cloudinary.uploader.upload(req.files.ogImage[0].path, {
+        folder: 'tenderoutes-packages/og-images'
+      });
+      package.ogImage = result.secure_url;
+      package.ogImagePublicId = result.public_id;
+      fs.unlinkSync(req.files.ogImage[0].path);
+    }
 
-if (faqs) {
-  try {
-    package.faqs = typeof faqs === 'string' ? JSON.parse(faqs) : faqs;
-  } catch (err) {
-    console.error('Error parsing faqs:', err);
-    return res.status(400).json({ error: 'Invalid faqs format' });
-  }
-}
-    
-    if (price) package.details.price = parseFloat(price);
-    if (originalPrice) package.details.originalPrice = parseFloat(originalPrice);
+    // Handle JSON fields
+    const jsonFields = ['itinerary', 'inclusions', 'exclusions', 'overview', 'highlights', 'faqs'];
+    jsonFields.forEach(field => {
+      if (req.body[field]) {
+        try {
+          package[field === 'overview' ? field : `details.${field}`] = 
+            typeof req.body[field] === 'string' ? JSON.parse(req.body[field]) : req.body[field];
+        } catch (err) {
+          console.error(`Error parsing ${field}:`, err);
+          return res.status(400).json({ error: `Invalid ${field} format` });
+        }
+      }
+    });
 
     package.updatedAt = Date.now();
     const updatedPackage = await package.save();
