@@ -726,6 +726,22 @@
         ar: el.querySelector('[name="faqAnswerAr"]').value
       }
     }));
+
+      
+    // Get metatags data
+    const metatags = {
+      title: {
+        en: form.querySelector('[name="metaTitleEn"]').value,
+        ar: form.querySelector('[name="metaTitleAr"]').value
+      },
+      description: {
+        en: form.querySelector('[name="metaDescriptionEn"]').value,
+        ar: form.querySelector('[name="metaDescriptionAr"]').value
+      }
+    };
+
+      // Add metatags to formData
+      formData.append('metatags', JSON.stringify(metatags));
     
     // Add JSON data to formData
     formData.append('itinerary', JSON.stringify(itinerary));
@@ -734,6 +750,7 @@
     formData.append('overview', JSON.stringify(overview));
     formData.append('highlights', JSON.stringify(highlights));
     formData.append('faqs', JSON.stringify(faqs));
+    formData.append('metatags', JSON.stringify(metatags));
 
     const url = packageId 
       ? `https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`
@@ -786,8 +803,14 @@
         clearDynamicFields('faqContainer');
         clearDynamicFields('inclusionsContainer');
         clearDynamicFields('exclusionsContainer');
-        document.getElementById('packageId').value = '';
-        cancelEditBtn.style.display = 'none';
+         // Clear metatag fields
+  document.querySelector('[name="metaTitleEn"]').value = '';
+  document.querySelector('[name="metaTitleAr"]').value = '';
+  document.querySelector('[name="metaDescriptionEn"]').value = '';
+  document.querySelector('[name="metaDescriptionAr"]').value = '';
+  
+  document.getElementById('packageId').value = '';
+  cancelEditBtn.style.display = 'none';
       });
   
       // Filter packages by type
@@ -957,6 +980,19 @@
           // Fill overview
           document.querySelector('[name="overviewEn"]').value = pkg.overview.en;
           document.querySelector('[name="overviewAr"]').value = pkg.overview.ar;
+
+
+          if (pkg.metatags) {
+      if (pkg.metatags.title) {
+        document.querySelector('[name="metaTitleEn"]').value = pkg.metatags.title.en || '';
+        document.querySelector('[name="metaTitleAr"]').value = pkg.metatags.title.ar || '';
+      }
+      
+      if (pkg.metatags.description) {
+        document.querySelector('[name="metaDescriptionEn"]').value = pkg.metatags.description.en || '';
+        document.querySelector('[name="metaDescriptionAr"]').value = pkg.metatags.description.ar || '';
+      }
+    }
           
           // Clear and rebuild highlights
           clearDynamicFields('highlightsContainer');
