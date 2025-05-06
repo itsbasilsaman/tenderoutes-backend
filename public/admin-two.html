@@ -734,8 +734,8 @@
     formData.append('faqs', JSON.stringify(faqs));
 
     const url = packageId 
-      ? `http://localhost:5000/api/sections/${packageId}`
-      : 'http://localhost:5000/api/sections';
+      ? `https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`
+      : 'https://tenderoutes-backend-4.onrender.com/api/sections';
       
     const method = packageId ? 'PUT' : 'POST';
     
@@ -824,7 +824,7 @@
         `;
         
         try {
-          const url = `http://localhost:5000/api/sections?type=${type}`;
+          const url = `https://tenderoutes-backend-4.onrender.com/api/sections?type=${type}`;
           const res = await fetch(url);
           if (!res.ok) throw new Error('Failed to fetch packages');
           
@@ -917,13 +917,13 @@
               ${priceDisplay}
               
               <div class="mt-4 flex space-x-2">
-                <a href="../package-details.html?id=${pkg._id}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <a href="../package-details.html?id=${pkg._id}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-500 hover:bg-blue-600  ">
                   View Details
                 </a>
-                <button onclick="editPackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <button onclick="editPackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-blue-500 hover:bg-blue-600 ">
                   Edit
                 </button>
-                <button onclick="deletePackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                <button onclick="deletePackage('${pkg._id}')" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-blue-500 hover:bg-blue-600 ">
                   Delete
                 </button>
               </div>
@@ -937,7 +937,7 @@
       // Edit package - Load data into form
       async function editPackage(packageId) {
         try {
-          const response = await fetch(`http://localhost:5000/api/sections/${packageId}`);
+          const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`);
           if (!response.ok) throw new Error('Failed to fetch package');
           
           const pkg = await response.json();
@@ -1010,7 +1010,7 @@
         if (!confirm('Are you sure you want to delete this package?')) return;
         
         try {
-          const response = await fetch(`http://localhost:5000/api/sections/${packageId}`, {
+          const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/sections/${packageId}`, {
             method: 'DELETE'
           });
           
@@ -1162,7 +1162,7 @@
       // Load featured packages
   async function loadFeaturedPackages() {
     try {
-      const response = await fetch(' http://localhost:5000/api/featured-packages');
+      const response = await fetch(' https://tenderoutes-backend-4.onrender.com/api/featured-packages');
       if (!response.ok) throw new Error('Failed to fetch featured packages');
       
       const featuredPackages = await response.json();
@@ -1209,7 +1209,7 @@
   async function openAddFeaturedModal() {
     try {
       // Load packages for dropdown
-      const response = await fetch('http://localhost:5000/api/sections');
+      const response = await fetch('https://tenderoutes-backend-4.onrender.com/api/sections');
       if (!response.ok) throw new Error('Failed to fetch packages');
       
       const packages = await response.json();
@@ -1249,7 +1249,7 @@
         throw new Error('All fields are required');
       }
       
-      const response = await fetch('http://localhost:5000/api/featured-packages', {
+      const response = await fetch('https://tenderoutes-backend-4.onrender.com/api/featured-packages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -1281,7 +1281,7 @@
     if (!confirm('Are you sure you want to remove this package from featured section?')) return;
     
     try {
-      const response = await fetch(`http://localhost:5000/api/featured-packages/${id}`, {
+      const response = await fetch(`https://tenderoutes-backend-4.onrender.com/api/featured-packages/${id}`, {
         method: 'DELETE'
       });
       
